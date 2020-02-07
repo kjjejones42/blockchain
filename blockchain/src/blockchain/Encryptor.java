@@ -17,9 +17,9 @@ class Encryptor {
  
     private static final String KEYS_PATH = "keys.db";
 
-    private PrivateKey privateKey = null;
-    private PublicKey publicKey = null;
-    private SecretKey AESKey = null;
+    private PrivateKey privateKey;
+    private PublicKey publicKey;
+    private SecretKey AESKey;
 
     private static Encryptor instance;
 
@@ -96,7 +96,7 @@ class Encryptor {
         try {
             Cipher c = Cipher.getInstance("AES");
             c.init(Cipher.ENCRYPT_MODE, getAESKey());
-            return c.doFinal(input);            
+            return c.doFinal(input);     
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -106,7 +106,7 @@ class Encryptor {
         try {
             Cipher c = Cipher.getInstance("AES");
             c.init(Cipher.DECRYPT_MODE, getAESKey());
-            return c.doFinal(input);            
+            return c.doFinal(input);   
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -178,7 +178,7 @@ class Encryptor {
         }
     }
     
-    void loadAESKeyFromBytes(byte[] encodedKey){
+    void loadRSAEncryptedAESKeyFromBytes(byte[] encodedKey){
         encodedKey = RSADecrypt(encodedKey);
         setAESKey(new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES"));
     }
@@ -202,6 +202,17 @@ class Encryptor {
         }
     }
 
+    Object AESEncryptedBytesToObj(byte[] arr){
+        try {
+            arr = AESDecrypt(arr);
+            ByteArrayInputStream bis = new ByteArrayInputStream(arr);
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            return ois.readObject();            
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     String applySha256(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -219,7 +230,4 @@ class Encryptor {
         }
     }
 
-    Object AESEncryptedBytesToObj(byte[] arr){
-        return AESDecrypt(arr);
-    }
 }

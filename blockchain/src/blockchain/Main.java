@@ -12,7 +12,7 @@ public class Main {
             FileInputStream fileIn = new FileInputStream(path);
             ObjectInputStream in = new ObjectInputStream(fileIn);
             SaveFile sf = (SaveFile) in.readObject();
-            e.loadAESKeyFromBytes(sf.a);
+            e.loadRSAEncryptedAESKeyFromBytes(sf.a);
             Blockchain bc = Blockchain.class.cast(e.AESEncryptedBytesToObj(sf.b));
             in.close();
             return bc;
