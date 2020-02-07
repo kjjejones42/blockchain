@@ -7,7 +7,7 @@ class Message implements Serializable {
     static final long serialVersionUID = 0;
     private final String userId;
     private final String message;
-    private byte[] signature = null;
+    private byte[] signature;
     private int id;
     private PublicKey publicKey;
 

@@ -9,7 +9,7 @@ class Miner implements Callable<BlockchainSubmission> {
     private Block block;
     private Blockchain blockchain;
     private int leadingZeroes;
-    private boolean isRunning = false;
+    private boolean isRunning;
 
     Miner(int id, Blockchain blockchain) {
         this.id = id;
