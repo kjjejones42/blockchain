@@ -7,25 +7,16 @@ import java.util.concurrent.*;
 class MinerManager {
 
     private final Blockchain blockchain;
-    private final int threads;
     private ExecutorService executor;
     private List<Miner> miners;
-    
+
     MinerManager(Blockchain blockchain, int threads) {
-        this.threads = threads;
         this.blockchain = blockchain;
         Miner[] arr = new Miner[threads];
         for (int i = 0; i < threads; i++){
             arr[i] = new Miner("miner" + i, blockchain);
         }
         miners = List.of(arr);
-        initialize();
-    }
-
-    private void initialize(){
-        if (executor != null){
-            executor.shutdown();
-        }
         executor = Executors.newFixedThreadPool(threads);
     }
 
@@ -49,7 +40,6 @@ class MinerManager {
                     throw new Exception("Blockchain is invalid");
                 }
             }
-            initialize();
         } catch (Exception e) {            
             close();
             throw new RuntimeException(e);

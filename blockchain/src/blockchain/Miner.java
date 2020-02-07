@@ -24,7 +24,7 @@ class Miner implements Callable<BlockchainSubmission> {
         return isRunning;
     }
 
-    void set(Block block, int leadingZeroes) {
+    synchronized void set(Block block, int leadingZeroes) {
         this.block = new Block(block);
         this.leadingZeroes = leadingZeroes;
         Transaction transaction = blockchain.getInitialTransaction(id);
@@ -38,21 +38,25 @@ class Miner implements Callable<BlockchainSubmission> {
 
     @Override
     synchronized public BlockchainSubmission call() {
-        isRunning = true;
-        Thread.currentThread().setName(id);
-        long startTime = new Date().getTime();
+        try {                
+            isRunning = true;
+            Thread.currentThread().setName(id);
+            long startTime = new Date().getTime();
 
-        Random rand = new Random();
-        int magicNumber;
-        do {
-            if (Thread.currentThread().isInterrupted()) {
-                isRunning = false;
-                throw new RuntimeException();
-            }
-            magicNumber = Math.abs(rand.nextInt());
-        } while (!block.isValidMagicNumber(magicNumber, leadingZeroes));
-        isRunning = false;
-        return new BlockchainSubmission(magicNumber, id, new Date().getTime() - startTime, leadingZeroes);
+            Random rand = new Random();
+            int magicNumber;
+            do {
+                if (Thread.currentThread().isInterrupted()) {
+                    isRunning = false;
+                    return null;
+                }
+                magicNumber = Math.abs(rand.nextInt());
+            } while (!block.isValidMagicNumber(magicNumber, leadingZeroes));
+            isRunning = false;
+            return new BlockchainSubmission(magicNumber, id, new Date().getTime() - startTime, leadingZeroes);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
