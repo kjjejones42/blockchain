@@ -5,15 +5,15 @@ import java.io.*;
 public class Main {
 
     private static String PATH = "blockchain.db";
-    private static Encryptor e;
+    private static Encryptor encryptor;
 
     private static Blockchain load(String path) {
         try {
             FileInputStream fileIn = new FileInputStream(path);
             ObjectInputStream in = new ObjectInputStream(fileIn);
             SaveFile sf = (SaveFile) in.readObject();
-            e.loadRSAEncryptedAESKeyFromBytes(sf.a);
-            Blockchain bc = Blockchain.class.cast(e.AESEncryptedBytesToObj(sf.b));
+            encryptor.loadRSAEncryptedAESKeyFromBytes(sf.a);
+            Blockchain bc = Blockchain.class.cast(encryptor.AESEncryptedBytesToObj(sf.b));
             in.close();
             return bc;
         } catch (IOException | ClassNotFoundException e) {
@@ -26,12 +26,13 @@ public class Main {
         synchronized (bc) {
             try {
                 SaveFile sf = new SaveFile(
-                    e.getRSAEncryptedAESKey(),
-                    e.objToAESEncryptedBytes(bc));
+                    encryptor.getRSAEncryptedAESKey(),
+                    encryptor.objToAESEncryptedBytes(bc));
                 FileOutputStream fileOut = new FileOutputStream(path);
                 ObjectOutputStream out = new ObjectOutputStream(fileOut);
                 out.writeObject(sf);
                 out.close();
+                encryptor.saveRSAKeysToFile();
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
@@ -40,7 +41,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        e = Encryptor.getInstance();
+        encryptor = Encryptor.getInstance();
         final Blockchain blockchain;
         if (new File(PATH).exists()) {
             blockchain = load(PATH);

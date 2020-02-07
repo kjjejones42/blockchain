@@ -66,22 +66,7 @@ class Encryptor {
         }     
     }
 
-    private void saveKeysToFile(){
-        try {
-            KeyFile kf = new KeyFile(
-                getPublicKey().getEncoded(),
-                getPrivateKey().getEncoded());
-            FileOutputStream fos = new FileOutputStream(KEYS_PATH);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(kf);
-            oos.close();            
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    private void loadKeysFromFile(){
+    private void loadRSAKeysFromFile(){
         try {
             KeyFile kf = KeyFile.class.cast(byteArrayToObject(Files.readAllBytes(Paths.get(KEYS_PATH))));
             getPrivateKeyFromBytes(kf.b);
@@ -90,7 +75,7 @@ class Encryptor {
             KeyPair kp = generatePublicAndPrivateKeys();  
             privateKey = kp.getPrivate();
             publicKey = kp.getPublic();          
-            saveKeysToFile();   
+            saveRSAKeysToFile();   
         }
 
     }
@@ -165,16 +150,31 @@ class Encryptor {
 	
 	PrivateKey getPrivateKey(){
         if (privateKey == null){
-            loadKeysFromFile();
+            loadRSAKeysFromFile();
         }
         return privateKey;
     }
 
 	PublicKey getPublicKey(){
         if (publicKey == null){
-            loadKeysFromFile();
+            loadRSAKeysFromFile();
         }
         return publicKey;
+    }    
+
+    void saveRSAKeysToFile(){
+        try {
+            KeyFile kf = new KeyFile(
+                getPublicKey().getEncoded(),
+                getPrivateKey().getEncoded());
+            FileOutputStream fos = new FileOutputStream(KEYS_PATH);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(kf);
+            oos.close();            
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
     
     void loadRSAEncryptedAESKeyFromBytes(byte[] encodedKey){
