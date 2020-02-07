@@ -42,11 +42,11 @@ public class Main {
     public static void main(String[] args) {
         e = Encryptor.getInstance();
         final Blockchain blockchain;
-        // if (new File(PATH).exists()) {
-        //     blockchain = load(PATH);
-        // } else {
+        if (new File(PATH).exists()) {
+            blockchain = load(PATH);
+        } else {
             blockchain = new Blockchain(0);
-        // }
+        }
         MinerManager minerManager = new MinerManager(blockchain, 10);
         Thread submitter = new Thread(new MessageSubmitter(blockchain, 10));
         submitter.start();
