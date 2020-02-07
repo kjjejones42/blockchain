@@ -6,13 +6,14 @@ import java.util.*;
 class Blockchain implements Serializable {
 
     static final long serialVersionUID = 1;
-    private volatile int zeroes;
-    private int messageId = 0;
+
+    private int zeroes;
+    private int messageId = 1;
     private final List<Block> blockChain = new ArrayList<>();
     private Block blockToMine;
     private String NChangeMessage;
-    private volatile List<Message> messages = new ArrayList<>();
-    private int initialMessageId;
+    private List<Message> messages = new ArrayList<>();
+    private int initialMessageId = messageId;
 
     Blockchain(int zeroes) {
         this.zeroes = zeroes;
@@ -64,23 +65,23 @@ class Blockchain implements Serializable {
 
     synchronized void submitMessage(Message message){
         if (message.isSignatureValid()){
-            message.id = messageId++;
+            message.id = ++messageId;
             messages.add(message);
         }
     }
 
     synchronized void addSubmission(BlockchainSubmission submission) {
-        Block block = getBlockToMine();
-        synchronized (block){
-            block.addMessage(getInitialMessage(submission.minerId));
-            block.setMinedDetails(submission);
-            blockChain.add(block);
-            processNChange(block.getTimeToGenerate());
-            blockToMine = new Block(block.getId() + 1, block.getSelfSha256Hash());            
-            blockToMine.setMessages(messages);
-            initialMessageId = messageId++;
-            this.messages = new ArrayList<>();
-        }
+        Block block = new Block(getBlockToMine());
+        block.addMessage(getInitialMessage(submission.minerId));
+        block.setMinedDetails(submission);
+        blockChain.add(block);
+
+        processNChange(block.getTimeToGenerate());
+
+        blockToMine = new Block(block.getId() + 1, block.getSelfSha256Hash());            
+        blockToMine.setMessages(messages);
+        initialMessageId = ++messageId;
+        this.messages = new ArrayList<>();
     }
 
     synchronized Message getInitialMessage(int minerId){
