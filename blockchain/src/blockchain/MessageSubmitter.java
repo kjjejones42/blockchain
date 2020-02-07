@@ -26,7 +26,7 @@ class MessageSubmitter implements Runnable {
                 if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
-                Message message = new Message(
+                Transaction message = new Transaction(
                     Integer.toString(i++),
                     "This message was generated on the timestamp " + new Date().getTime(), privKey, pubKey);
                 blockchain.submitMessage(message);

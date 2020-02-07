@@ -3,7 +3,7 @@ package blockchain;
 import java.io.Serializable;
 import java.security.*;
 
-class Message implements Serializable {
+class Transaction implements Serializable {
     static final long serialVersionUID = 0;
     private final String userId;
     private final String message;
@@ -11,7 +11,7 @@ class Message implements Serializable {
     private int id;
     private PublicKey publicKey;
 
-    Message(String userId, String message, PrivateKey privKey, PublicKey pubKey){
+    Transaction(String userId, String message, PrivateKey privKey, PublicKey pubKey){
         this.userId = userId;
         this.message = message;
         sign(privKey, pubKey);

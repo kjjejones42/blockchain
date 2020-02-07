@@ -16,7 +16,7 @@ class Block implements Serializable {
     private long timeToGenerate;
     private String minedBy;
     private boolean isHashSet = false;
-    private List<Message> messages;
+    private List<Transaction> messages;
     private String preliminaryHash = null;
 
     Block(long id, String prevBlockHash) {
@@ -66,16 +66,16 @@ class Block implements Serializable {
         return this.timeToGenerate;
     }
 
-    List<Message> getMessages(){
+    List<Transaction> getMessages(){
         return this.messages;
     }
 
-    void setMessages(List<Message> messages){        
+    void setMessages(List<Transaction> messages){        
         this.messages = messages;
         generatePreliminaryHash();
     }
 
-    void addMessage(Message message){
+    void addMessage(Transaction message){
         messages.add(message);
     }
 
@@ -111,7 +111,7 @@ class Block implements Serializable {
             "Hash of the block:\n" + selfSha256Hash + 
             "\nBlock data: ");
         if (!messages.isEmpty()){
-            for (Message message : messages){
+            for (Transaction message : messages){
                 s.append("\n").append(message.toString());
             }
         } else {

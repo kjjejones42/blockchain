@@ -12,7 +12,7 @@ class Blockchain implements Serializable {
     private final List<Block> blockChain = new ArrayList<>();
     private Block blockToMine;
     private String NChangeMessage;
-    private List<Message> messages = new ArrayList<>();
+    private List<Transaction> messages = new ArrayList<>();
     private int initialMessageId = messageId;
 
     Blockchain(int zeroes) {
@@ -73,7 +73,7 @@ class Blockchain implements Serializable {
             }
             int maxMessageId = block.getMessages().stream().mapToInt(message -> message.getId()).max().orElse(Integer.MAX_VALUE);
             int lastMessageId = Integer.MIN_VALUE;
-            for (Message message : block.getMessages()){
+            for (Transaction message : block.getMessages()){
                 int id = message.getId();
                 if (id > maxMessageId || id < lastMessageId || !message.isSignatureValid()){
                     return false;
@@ -84,16 +84,16 @@ class Blockchain implements Serializable {
         return true;
     }
 
-    synchronized void submitMessage(Message message){
+    synchronized void submitMessage(Transaction message){
         if (message.isSignatureValid()){            
             incrementMessageId();
             message.setId(messageId);
             messages.add(message);
         }
     }
-    synchronized Message getInitialMessage(String minerId){
+    synchronized Transaction getInitialMessage(String minerId){
         Encryptor e = Encryptor.getInstance();
-        Message message = new Message(minerId, "Give me a coin", e.getPrivateKey(), e.getPublicKey());
+        Transaction message = new Transaction(minerId, "Give me a coin", e.getPrivateKey(), e.getPublicKey());
         message.setId(initialMessageId);
         return message;
     }

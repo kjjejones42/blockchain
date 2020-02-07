@@ -27,7 +27,7 @@ class Miner implements Callable<BlockchainSubmission> {
     void set(Block block, int leadingZeroes) {
         this.block = new Block(block);
         this.leadingZeroes = leadingZeroes;
-        Message message = blockchain.getInitialMessage(id);
+        Transaction message = blockchain.getInitialMessage(id);
         this.block.addMessage(message);
     }
 
