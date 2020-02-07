@@ -15,7 +15,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 class Encryptor {
  
-    private static final String KEYS_PATH = "keys";
+    private static final String KEYS_PATH = "keys.db";
 
     private static PrivateKey privateKey = null;
     private static PublicKey publicKey = null;
@@ -57,7 +57,7 @@ class Encryptor {
 
     static private void loadKeysFromFile(){
         try {
-            KeyFile kf = byteArrayToObject(Files.readAllBytes(Paths.get(KEYS_PATH)), KeyFile.class);
+            KeyFile kf = KeyFile.class.cast(byteArrayToObject(Files.readAllBytes(Paths.get(KEYS_PATH))));
             getPrivateKeyFromBytes(kf.privateKey);
             getPublicKeyFromBytes(kf.publicKey);
         } catch (Exception e) {
@@ -145,11 +145,11 @@ class Encryptor {
         }
     }
     
-    static <T> T byteArrayToObject(byte[] arr, Class<T> clazz){
+    static Object byteArrayToObject(byte[] arr){
         try {
             ByteArrayInputStream bis = new ByteArrayInputStream(arr);
             ObjectInputStream oos = new ObjectInputStream(bis);
-            return clazz.cast(oos.readObject());            
+            return oos.readObject();            
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

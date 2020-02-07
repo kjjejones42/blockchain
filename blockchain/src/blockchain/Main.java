@@ -14,7 +14,7 @@ public class Main {
             SaveFile sf = (SaveFile) in.readObject();
             SecretKey sk = Encryptor.loadSecretKey(sf.RSAEncryptedAESKey);
             Encryptor.setAESKey(sk);
-            Blockchain bc = Encryptor.<Blockchain>byteArrayToObject(Encryptor.AESDecrypt(sf.AESEncryptedFile), Blockchain.class);
+            Blockchain bc = Blockchain.class.cast(Encryptor.byteArrayToObject(Encryptor.AESDecrypt(sf.AESEncryptedFile)));
             in.close();
             return bc;
         } catch (IOException | ClassNotFoundException e) {
@@ -54,7 +54,6 @@ public class Main {
             minerManager.mine();
             System.out.println(blockchain.getLatestCompleteBlock());
             System.out.println(blockchain.getNChangeMessage() + "\n");
-            save(blockchain, PATH);
             new Thread(() -> save(blockchain, PATH)).start();
         }
         submitter.interrupt();
