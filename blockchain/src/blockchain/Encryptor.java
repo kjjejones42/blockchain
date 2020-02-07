@@ -58,8 +58,8 @@ class Encryptor {
     static private void loadKeysFromFile(){
         try {
             KeyFile kf = KeyFile.class.cast(byteArrayToObject(Files.readAllBytes(Paths.get(KEYS_PATH))));
-            getPrivateKeyFromBytes(kf.privateKey);
-            getPublicKeyFromBytes(kf.publicKey);
+            getPrivateKeyFromBytes(kf.b);
+            getPublicKeyFromBytes(kf.a);
         } catch (Exception e) {
             KeyPair kp = generatePublicAndPrivateKeys();  
             privateKey = kp.getPrivate();

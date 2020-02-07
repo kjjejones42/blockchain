@@ -12,9 +12,9 @@ public class Main {
             FileInputStream fileIn = new FileInputStream(path);
             ObjectInputStream in = new ObjectInputStream(fileIn);
             SaveFile sf = (SaveFile) in.readObject();
-            SecretKey sk = Encryptor.loadSecretKey(sf.RSAEncryptedAESKey);
+            SecretKey sk = Encryptor.loadSecretKey(sf.a);
             Encryptor.setAESKey(sk);
-            Blockchain bc = Blockchain.class.cast(Encryptor.byteArrayToObject(Encryptor.AESDecrypt(sf.AESEncryptedFile)));
+            Blockchain bc = Blockchain.class.cast(Encryptor.byteArrayToObject(Encryptor.AESDecrypt(sf.b)));
             in.close();
             return bc;
         } catch (IOException | ClassNotFoundException e) {
