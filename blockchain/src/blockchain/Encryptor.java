@@ -60,8 +60,8 @@ class Encryptor {
     private void getPublicKeyFromBytes(byte[] keyBytes){   
         try {
             X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-            publicKey = kf.generatePublic(spec);               
-        } catch (Exception e) {
+            publicKey = kf.generatePublic(spec);                
+        } catch (InvalidKeySpecException e) {
             throw new RuntimeException(e);
         }     
     }
@@ -75,7 +75,7 @@ class Encryptor {
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(kf);
             oos.close();            
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -86,7 +86,7 @@ class Encryptor {
             KeyFile kf = KeyFile.class.cast(byteArrayToObject(Files.readAllBytes(Paths.get(KEYS_PATH))));
             getPrivateKeyFromBytes(kf.b);
             getPublicKeyFromBytes(kf.a);
-        } catch (Exception e) {
+        } catch (IOException e) {
             KeyPair kp = generatePublicAndPrivateKeys();  
             privateKey = kp.getPrivate();
             publicKey = kp.getPublic();          
@@ -96,23 +96,24 @@ class Encryptor {
     }
 
     private SecretKey getAESKey(){
-        try {
-            if (AESKey == null){
+        if (AESKey == null){
+            try {
                 KeyGenerator k = KeyGenerator.getInstance("AES");
                 k.init(128);
                 AESKey = k.generateKey();
             }
-            return AESKey;            
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+             catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
         }
+        return AESKey;                    
     }
 
     private byte[] AESEncrypt(byte[] input){
         try {
             AESCipher.init(Cipher.ENCRYPT_MODE, getAESKey());
             return AESCipher.doFinal(input);     
-        } catch (Exception e) {
+        } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             throw new RuntimeException(e);
         }
     }
@@ -121,7 +122,7 @@ class Encryptor {
         try {
             AESCipher.init(Cipher.DECRYPT_MODE, getAESKey());
             return AESCipher.doFinal(input);   
-        } catch (Exception e) {
+        } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             throw new RuntimeException(e);
         }
     }
@@ -130,7 +131,7 @@ class Encryptor {
         try {
             RSACipher.init(Cipher.ENCRYPT_MODE, getPublicKey());
             return RSACipher.doFinal(input);            
-        } catch (Exception e) {
+        } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             throw new RuntimeException(e);
         }
     }
@@ -139,7 +140,7 @@ class Encryptor {
         try {
             RSACipher.init(Cipher.DECRYPT_MODE, getPrivateKey());
             return RSACipher.doFinal(input);            
-        } catch (Exception e) {
+        } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             throw new RuntimeException(e);
         }
     }
@@ -149,7 +150,7 @@ class Encryptor {
             ByteArrayInputStream bis = new ByteArrayInputStream(arr);
             ObjectInputStream oos = new ObjectInputStream(bis);
             return oos.readObject();            
-        } catch (Exception e) {
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
@@ -159,33 +160,21 @@ class Encryptor {
     }
 
     KeyPair generatePublicAndPrivateKeys(){
-        try {
-            return kpg.generateKeyPair();          
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return kpg.generateKeyPair();      
     }
 	
 	PrivateKey getPrivateKey(){
-        try {
-            if (privateKey == null){
-                loadKeysFromFile();
-            }
-            return privateKey;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (privateKey == null){
+            loadKeysFromFile();
         }
+        return privateKey;
     }
 
 	PublicKey getPublicKey(){
-        try {
-            if (publicKey == null){
-                loadKeysFromFile();
-            }
-            return publicKey;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (publicKey == null){
+            loadKeysFromFile();
         }
+        return publicKey;
     }
     
     void loadRSAEncryptedAESKeyFromBytes(byte[] encodedKey){
@@ -194,11 +183,8 @@ class Encryptor {
     }
 
     byte[] getRSAEncryptedAESKey(){
-        try {
-            return RSAEncrypt(getAESKey().getEncoded());       
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        byte[] key = getAESKey().getEncoded();
+        return RSAEncrypt(key);  
     }     
 
     byte[] objToAESEncryptedBytes(Object obj){
@@ -207,7 +193,7 @@ class Encryptor {
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(obj);
             return AESEncrypt(bos.toByteArray());            
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -218,7 +204,7 @@ class Encryptor {
             ByteArrayInputStream bis = new ByteArrayInputStream(arr);
             ObjectInputStream ois = new ObjectInputStream(bis);
             return ois.readObject();            
-        } catch (Exception e) {
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
@@ -235,7 +221,7 @@ class Encryptor {
                 hexString.append(hex);
             }
             return hexString.toString();
-        } catch (Exception e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }
