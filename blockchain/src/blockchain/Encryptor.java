@@ -17,11 +17,20 @@ class Encryptor {
  
     private static final String KEYS_PATH = "keys.db";
 
-    private static PrivateKey privateKey = null;
-    private static PublicKey publicKey = null;
-    private static SecretKey AESKey = null;
+    private PrivateKey privateKey = null;
+    private PublicKey publicKey = null;
+    private SecretKey AESKey = null;
+
+    private static Encryptor instance;
+
+    static public Encryptor getInstance(){
+        if (instance == null){
+            instance = new Encryptor();
+        }
+        return instance;
+    }
         
-    static private void getPrivateKeyFromBytes(byte[] keyBytes){   
+    private void getPrivateKeyFromBytes(byte[] keyBytes){   
         try {
             PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
             KeyFactory kf = KeyFactory.getInstance("RSA");
@@ -31,7 +40,7 @@ class Encryptor {
         }     
     }
 
-    static private void getPublicKeyFromBytes(byte[] keyBytes){   
+    private void getPublicKeyFromBytes(byte[] keyBytes){   
         try {
             X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
             KeyFactory kf = KeyFactory.getInstance("RSA");
@@ -41,7 +50,7 @@ class Encryptor {
         }     
     }
 
-    static private void saveKeysToFile(){
+    private void saveKeysToFile(){
         try {
             KeyFile kf = new KeyFile(
                 getPublicKey().getEncoded(),
@@ -56,7 +65,7 @@ class Encryptor {
 
     }
 
-    static private void loadKeysFromFile(){
+    private void loadKeysFromFile(){
         try {
             KeyFile kf = KeyFile.class.cast(byteArrayToObject(Files.readAllBytes(Paths.get(KEYS_PATH))));
             getPrivateKeyFromBytes(kf.b);
@@ -70,7 +79,7 @@ class Encryptor {
 
     }
 
-    static private SecretKey getAESKey(){
+    private SecretKey getAESKey(){
         try {
             if (AESKey == null){
                 KeyGenerator k = KeyGenerator.getInstance("AES");
@@ -83,7 +92,7 @@ class Encryptor {
         }
     }
 
-    static private byte[] AESEncrypt(byte[] input){
+    private byte[] AESEncrypt(byte[] input){
         try {
             Cipher c = Cipher.getInstance("AES");
             c.init(Cipher.ENCRYPT_MODE, getAESKey());
@@ -93,7 +102,7 @@ class Encryptor {
         }
     }
 
-    static private byte[] AESDecrypt(byte[] input){
+    private byte[] AESDecrypt(byte[] input){
         try {
             Cipher c = Cipher.getInstance("AES");
             c.init(Cipher.DECRYPT_MODE, getAESKey());
@@ -103,7 +112,7 @@ class Encryptor {
         }
     }
 
-    static private byte[] RSAEncrypt(byte[] input){
+    private byte[] RSAEncrypt(byte[] input){
         try {
             Cipher c = Cipher.getInstance("RSA");
             c.init(Cipher.ENCRYPT_MODE, getPublicKey());
@@ -113,7 +122,7 @@ class Encryptor {
         }
     }
 
-    static private byte[] RSADecrypt(byte[] input){
+    private byte[] RSADecrypt(byte[] input){
         try {
             Cipher c = Cipher.getInstance("RSA");
             c.init(Cipher.DECRYPT_MODE, getPrivateKey());
@@ -123,7 +132,7 @@ class Encryptor {
         }
     }
 
-    static private Object byteArrayToObject(byte[] arr){
+    private Object byteArrayToObject(byte[] arr){
         try {
             ByteArrayInputStream bis = new ByteArrayInputStream(arr);
             ObjectInputStream oos = new ObjectInputStream(bis);
@@ -133,11 +142,11 @@ class Encryptor {
         }
     }
 
-    static private void setAESKey(SecretKey sk){
+    private void setAESKey(SecretKey sk){
         AESKey = sk;
     }
 
-    static KeyPair generatePublicAndPrivateKeys(){
+    KeyPair generatePublicAndPrivateKeys(){
         try {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
             kpg.initialize(2048);
@@ -147,7 +156,7 @@ class Encryptor {
         }
     }
 	
-	static PrivateKey getPrivateKey(){
+	PrivateKey getPrivateKey(){
         try {
             if (privateKey == null){
                 loadKeysFromFile();
@@ -158,7 +167,7 @@ class Encryptor {
         }
     }
 
-	static PublicKey getPublicKey(){
+	PublicKey getPublicKey(){
         try {
             if (publicKey == null){
                 loadKeysFromFile();
@@ -169,12 +178,12 @@ class Encryptor {
         }
     }
     
-    static void loadAESKeyFromBytes(byte[] encodedKey){
+    void loadAESKeyFromBytes(byte[] encodedKey){
         encodedKey = RSADecrypt(encodedKey);
         setAESKey(new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES"));
     }
 
-    static byte[] getRSAEncryptedAESKey(){
+    byte[] getRSAEncryptedAESKey(){
         try {
             return RSAEncrypt(getAESKey().getEncoded());       
         } catch (Exception e) {
@@ -182,7 +191,7 @@ class Encryptor {
         }
     }     
 
-    static byte[] objToAESEncryptedBytes(Object obj){
+    byte[] objToAESEncryptedBytes(Object obj){
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -193,7 +202,7 @@ class Encryptor {
         }
     }
 
-    static String applySha256(String input) {
+    String applySha256(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
@@ -210,7 +219,7 @@ class Encryptor {
         }
     }
 
-    static Object AESEncryptedBytesToObj(byte[] arr){
+    Object AESEncryptedBytesToObj(byte[] arr){
         return AESDecrypt(arr);
     }
 }

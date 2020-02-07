@@ -12,7 +12,7 @@ class MessageSubmitter implements Runnable {
     MessageSubmitter(Blockchain blockchain, int delay){
         this.blockchain = blockchain;
         this.delay = delay;
-        KeyPair kp = Encryptor.generatePublicAndPrivateKeys();
+        KeyPair kp = Encryptor.getInstance().generatePublicAndPrivateKeys();
         this.privKey = kp.getPrivate();
         this.pubKey = kp.getPublic();
     }

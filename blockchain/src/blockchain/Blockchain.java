@@ -92,7 +92,8 @@ class Blockchain implements Serializable {
         }
     }
     synchronized Message getInitialMessage(int minerId){
-        Message message = new Message("Miner " + minerId, "Give me a coin", Encryptor.getPrivateKey(), Encryptor.getPublicKey());
+        Encryptor e = Encryptor.getInstance();
+        Message message = new Message("Miner " + minerId, "Give me a coin", e.getPrivateKey(), e.getPublicKey());
         message.setId(initialMessageId);
         return message;
     }

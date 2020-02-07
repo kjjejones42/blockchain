@@ -43,7 +43,7 @@ class Block implements Serializable {
     }
 
     private String generateSelfSha256Hash(){
-        return Encryptor.applySha256(getPreliminaryHash() + magicNumber);
+        return Encryptor.getInstance().applySha256(getPreliminaryHash() + magicNumber);
     }
 
     private synchronized void generatePreliminaryHash() {
@@ -84,7 +84,7 @@ class Block implements Serializable {
     }
 
     public boolean isValidMagicNumber(int magicNumber, int zeroes) {
-        String sha256Hash = Encryptor.applySha256(getPreliminaryHash() + magicNumber);
+        String sha256Hash = Encryptor.getInstance().applySha256(getPreliminaryHash() + magicNumber);
         return sha256Hash.startsWith("0".repeat(zeroes));
     }
 
