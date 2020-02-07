@@ -93,7 +93,7 @@ class Blockchain implements Serializable {
     }
     synchronized Transaction getInitialMessage(String minerId){
         Encryptor e = Encryptor.getInstance();
-        Transaction message = new Transaction(minerId, "Give me a coin", e.getPrivateKey(), e.getPublicKey());
+        Transaction message = new Transaction(minerId, minerId, 100f, e.getPrivateKey(), e.getPublicKey());
         message.setId(initialMessageId);
         return message;
     }
@@ -117,7 +117,7 @@ class Blockchain implements Serializable {
     }
 
     synchronized void incrementZeroes() {
-        // this.zeroes++;
+        this.zeroes++;
     }
 
     synchronized void decrementZeroes() {

@@ -5,15 +5,17 @@ import java.security.*;
 
 class Transaction implements Serializable {
     static final long serialVersionUID = 0;
-    private final String userId;
-    private final String message;
+    private final String from;
+    private final String to;
+    private final float amount;
     private byte[] signature;
     private int id;
     private PublicKey publicKey;
 
-    Transaction(String userId, String message, PrivateKey privKey, PublicKey pubKey){
-        this.userId = userId;
-        this.message = message;
+    Transaction(String userId, String message, float amount, PrivateKey privKey, PublicKey pubKey){
+        this.from = userId;
+        this.to = message;
+        this.amount = amount;
         sign(privKey, pubKey);
     }
 
@@ -30,7 +32,7 @@ class Transaction implements Serializable {
     }
 
     public byte[] getPreliminaryHash(){
-        return (userId + message).getBytes();
+        return (from + to + amount).getBytes();
     }
 
     public byte[] getSignature(){
@@ -62,6 +64,6 @@ class Transaction implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("%03d", id) + "| User \"" + userId + "\" says: " + message;
+        return String.format("%03d", id) + "| User \"" + from + "\" gave \"" + to + "\" " + amount;
     }
 }

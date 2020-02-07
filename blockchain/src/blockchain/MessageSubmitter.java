@@ -1,6 +1,5 @@
 package blockchain;
 
-import java.util.*;
 import java.security.*;
 
 class MessageSubmitter implements Runnable {
@@ -28,7 +27,7 @@ class MessageSubmitter implements Runnable {
                 }
                 Transaction message = new Transaction(
                     Integer.toString(i++),
-                    "This message was generated on the timestamp " + new Date().getTime(), privKey, pubKey);
+                    "noone", 0f, privKey, pubKey);
                 blockchain.submitMessage(message);
                 Thread.sleep(delay);
             } catch (InterruptedException e) {
