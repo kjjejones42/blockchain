@@ -35,7 +35,7 @@ class MinerManager {
                 BlockchainSubmission result = executor.invokeAny(miners);
                 done = blockchain.submitSubmission(result);
                 if (!blockchain.isBlockchainValid()){
-                    throw new Exception();
+                    throw new Exception("Blockchain is invalid");
                 }
             }
         } catch (Exception e) {            

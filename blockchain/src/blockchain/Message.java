@@ -20,15 +20,16 @@ class Message implements Serializable {
         try {
             Signature sig = Signature.getInstance("SHA1withRSA");
             sig.initVerify(publicKey);
-            sig.update(getPreliminaryHash());		
-            return sig.verify(signature);            
+            sig.update(getPreliminaryHash());
+            boolean result = sig.verify(signature); 	
+            return result;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public byte[] getPreliminaryHash(){
-        return (userId + message + id).getBytes();
+        return (userId + message).getBytes();
     }
 
     public byte[] getSignature(){

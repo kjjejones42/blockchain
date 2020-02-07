@@ -61,8 +61,8 @@ class Blockchain implements Serializable {
     }
 
     synchronized void submitMessage(Message message){
-        message.id = messageId++;
         if (message.isSignatureValid()){
+            message.id = messageId++;
             messages.add(message);
         }
     }

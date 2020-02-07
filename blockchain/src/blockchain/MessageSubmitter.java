@@ -7,12 +7,14 @@ class MessageSubmitter implements Runnable {
     private Blockchain blockchain;
     private PrivateKey privKey;
     private PublicKey pubKey;
+    private int delay;
 
-    MessageSubmitter(Blockchain blockchain){
+    MessageSubmitter(Blockchain blockchain, int delay){
         this.blockchain = blockchain;
+        this.delay = delay;
         KeyPair kp = Encryptor.generatePublicAndPrivateKeys();
-        privKey = kp.getPrivate();
-        pubKey = kp.getPublic();
+        this.privKey = kp.getPrivate();
+        this.pubKey = kp.getPublic();
     }
     
     @Override
@@ -30,7 +32,7 @@ class MessageSubmitter implements Runnable {
                 message.signature = Encryptor.sign(message.getPreliminaryHash(), privKey);
                 message.publicKey = pubKey;
                 blockchain.submitMessage(message);
-                Thread.sleep(1000);
+                Thread.sleep(delay);
             } catch (InterruptedException e) {
                 return;
             }

@@ -48,7 +48,7 @@ public class Main {
             blockchain = new Blockchain(0);
         // }
         MinerManager minerManager = new MinerManager(blockchain, 10);
-        Thread submitter = new Thread(new MessageSubmitter(blockchain));
+        Thread submitter = new Thread(new MessageSubmitter(blockchain, 100));
         submitter.start();
         for (int i = 0; i < 5; i++) {
             minerManager.mine();
