@@ -19,10 +19,10 @@ class Encryptor {
 
     private static Encryptor instance;
 
-    private final KeyFactory kf;
+    private final KeyFactory RSAKeyFactory;
     private final Cipher AESCipher;
     private final Cipher RSACipher;
-    private final KeyPairGenerator kpg;
+    private final KeyPairGenerator RSAKeyGenerator;
 
     private PrivateKey privateKey;
     private PublicKey publicKey;
@@ -38,11 +38,11 @@ class Encryptor {
 
     Encryptor(){
         try {
-            kf = KeyFactory.getInstance("RSA");            
+            RSAKeyFactory = KeyFactory.getInstance("RSA");            
             AESCipher = Cipher.getInstance("AES");        
             RSACipher = Cipher.getInstance("RSA");
-            kpg = KeyPairGenerator.getInstance("RSA");            
-            kpg.initialize(2048);            
+            RSAKeyGenerator = KeyPairGenerator.getInstance("RSA");            
+            RSAKeyGenerator.initialize(2048);            
         } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
             throw new RuntimeException(e);
         }
@@ -51,7 +51,7 @@ class Encryptor {
     private void getPrivateKeyFromBytes(byte[] keyBytes){   
         try {
             PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-            privateKey = kf.generatePrivate(spec);               
+            privateKey = RSAKeyFactory.generatePrivate(spec);               
         } catch (InvalidKeySpecException e) {
             throw new RuntimeException(e);
         }     
@@ -60,7 +60,7 @@ class Encryptor {
     private void getPublicKeyFromBytes(byte[] keyBytes){   
         try {
             X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-            publicKey = kf.generatePublic(spec);                
+            publicKey = RSAKeyFactory.generatePublic(spec);                
         } catch (InvalidKeySpecException e) {
             throw new RuntimeException(e);
         }     
@@ -160,7 +160,7 @@ class Encryptor {
     }
 
     KeyPair generatePublicAndPrivateKeys(){
-        return kpg.generateKeyPair();      
+        return RSAKeyGenerator.generateKeyPair();      
     }
 	
 	PrivateKey getPrivateKey(){
