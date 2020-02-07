@@ -7,7 +7,7 @@ class Message implements Serializable {
     static final long serialVersionUID = 0;
     private final String userId;
     private final String message;
-    private byte[] signature;
+    private byte[] signature = null;
     private int id;
     private PublicKey publicKey;
 
@@ -46,6 +46,9 @@ class Message implements Serializable {
     }
 
 	void sign(PrivateKey privKey, PublicKey pubKey) {
+        if (signature != null){
+            throw new RuntimeException("Attempted to sign a message that is already signed");
+        }
         try {
             publicKey = pubKey;
             Signature rsa = Signature.getInstance("SHA1withRSA"); 

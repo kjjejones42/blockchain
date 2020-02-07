@@ -2,7 +2,6 @@ package blockchain;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.security.*;
 
 class Miner implements Callable<BlockchainSubmission> {
 
@@ -11,15 +10,10 @@ class Miner implements Callable<BlockchainSubmission> {
     private Blockchain blockchain;
     private int leadingZeroes;
     private boolean isRunning = false;
-    private final PrivateKey privKey;
-    private final PublicKey pubKey;
 
     Miner(int id, Blockchain blockchain) {
         this.id = id;
         this.blockchain = blockchain;
-        KeyPair kp = Encryptor.generatePublicAndPrivateKeys();
-        this.privKey = kp.getPrivate();
-        this.pubKey = kp.getPublic();
     }
 
     int getId(){
@@ -34,7 +28,6 @@ class Miner implements Callable<BlockchainSubmission> {
         this.block = new Block(block);
         this.leadingZeroes = leadingZeroes;
         Message message = blockchain.getInitialMessage(id);
-        message.sign(privKey, pubKey);
         this.block.addMessage(message);
     }
 

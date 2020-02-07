@@ -71,7 +71,7 @@ class Blockchain implements Serializable {
             if (!currHashOfPrev.equals(prevHashActual)) {
                 return false;
             }
-            int maxMessageId = block.getMessages().stream().mapToInt(message -> message.getId()).max().orElse(0);
+            int maxMessageId = block.getMessages().stream().mapToInt(message -> message.getId()).max().orElse(Integer.MAX_VALUE);
             int lastMessageId = Integer.MIN_VALUE;
             for (Message message : block.getMessages()){
                 int id = message.getId();
