@@ -25,10 +25,10 @@ class TransactionSubmitter implements Runnable {
                 if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
-                Transaction Transaction = new Transaction(
+                Transaction transaction = new Transaction(
                     Integer.toString(i++),
                     "noone", 0f, privKey, pubKey);
-                blockchain.submitTransaction(Transaction);
+                new Thread(() -> blockchain.submitTransaction(transaction)).start();
                 Thread.sleep(delay);
             } catch (InterruptedException e) {
                 return;
