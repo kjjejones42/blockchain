@@ -11,9 +11,10 @@ class Message implements Serializable {
     int id;
     PublicKey publicKey;
 
-    Message(String userId, String message){
+    Message(String userId, String message, PrivateKey privKey, PublicKey pubKey){
         this.userId = userId;
         this.message = message;
+        sign(privKey, pubKey);
     }
 
     public boolean isSignatureValid(){        
@@ -34,6 +35,18 @@ class Message implements Serializable {
 
     public byte[] getSignature(){
         return signature;
+    }
+
+	void sign(PrivateKey privKey, PublicKey pubKey) {
+        try {
+            publicKey = pubKey;
+            Signature rsa = Signature.getInstance("SHA1withRSA"); 
+            rsa.initSign(privKey);
+            rsa.update(getPreliminaryHash());
+            signature = rsa.sign();            
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

@@ -122,7 +122,7 @@ class Encryptor {
         }
     }
 
-	static private PrivateKey getPrivateKey(){
+	static PrivateKey getPrivateKey(){
         try {
             if (privateKey == null){
                 loadKeysFromFile();
@@ -171,17 +171,6 @@ class Encryptor {
         }
     }
     
-
-	static byte[] sign(byte[] data, PrivateKey privKey) {
-        try {
-            Signature rsa = Signature.getInstance("SHA1withRSA"); 
-            rsa.initSign(privKey);
-            rsa.update(data);
-            return rsa.sign();            
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
         
     static byte[] AESDecrypt(byte[] input){
         try {

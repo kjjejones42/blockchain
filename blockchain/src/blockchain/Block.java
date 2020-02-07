@@ -9,7 +9,7 @@ class Block implements Serializable {
     static final String DEFAULTHASH = "0";
 
     private final long id;
-    private final long timeStamp = new Date().getTime();
+    private final long timeStamp;
     private final String prevSha256Hash;
     private String selfSha256Hash = DEFAULTHASH;
     private int magicNumber;
@@ -20,8 +20,22 @@ class Block implements Serializable {
     private String preliminaryHash = null;
 
     Block(long id, String prevBlockHash) {
+        this.timeStamp = new Date().getTime();
         this.id = id;
         this.prevSha256Hash = prevBlockHash;
+    }
+
+    Block(Block block){
+        this.id = block.id;
+        this.timeStamp = block.timeStamp;
+        this.prevSha256Hash = block.prevSha256Hash;
+        this.selfSha256Hash = block.selfSha256Hash;
+        this.magicNumber = block.magicNumber;
+        this.timeToGenerate = block.timeToGenerate;
+        this.minedBy = block.minedBy;
+        this.isHashSet = block.isHashSet;
+        this.messages = new ArrayList<>(block.messages);
+        this.preliminaryHash = block.preliminaryHash;        
     }
 
     private void setSelfSha256Hash() {
@@ -59,6 +73,10 @@ class Block implements Serializable {
     void setMessages(List<Message> messages){        
         this.messages = messages;
         generatePreliminaryHash();
+    }
+
+    void addMessage(Message message){
+        messages.add(message);
     }
 
     public String getPreliminaryHash(){

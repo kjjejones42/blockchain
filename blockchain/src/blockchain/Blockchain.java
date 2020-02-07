@@ -12,6 +12,7 @@ class Blockchain implements Serializable {
     private Block blockToMine;
     private String NChangeMessage;
     private volatile List<Message> messages = new ArrayList<>();
+    private int initialMessageId;
 
     Blockchain(int zeroes) {
         this.zeroes = zeroes;
@@ -42,8 +43,9 @@ class Blockchain implements Serializable {
     synchronized boolean isBlockchainValid() {
         for (int i = 0; i < blockChain.size(); i++) {
             Block block = blockChain.get(i);
+            Block prevBlock = i == 0 ? null : blockChain.get(i - 1);
             String currHashOfPrev = block.getPrevBlockHash();
-            String prevHashActual = i == 0 ? Block.DEFAULTHASH : blockChain.get(i - 1).getSelfSha256Hash();
+            String prevHashActual = i == 0 ? Block.DEFAULTHASH : prevBlock.getSelfSha256Hash();
             if (!currHashOfPrev.equals(prevHashActual)) {
                 return false;
             }
@@ -67,21 +69,31 @@ class Blockchain implements Serializable {
         }
     }
 
-    synchronized void addToChain(Block block) {
+    synchronized void addSubmission(BlockchainSubmission submission) {
+        Block block = getBlockToMine();
         synchronized (block){
+            block.addMessage(getInitialMessage(submission.minerId));
+            block.setMinedDetails(submission);
             blockChain.add(block);
             processNChange(block.getTimeToGenerate());
             blockToMine = new Block(block.getId() + 1, block.getSelfSha256Hash());            
             blockToMine.setMessages(messages);
+            initialMessageId = messageId++;
             this.messages = new ArrayList<>();
         }
     }
 
+    synchronized Message getInitialMessage(int minerId){
+        Message message = new Message("Miner " + minerId, "Give me a coin", Encryptor.getPrivateKey(), Encryptor.getPublicKey());
+        message.id = initialMessageId;
+        return message;
+    }
+
     synchronized boolean submitSubmission(BlockchainSubmission submission){
-        Block block = getBlockToMine();
+        Block block = new Block(getBlockToMine());        
+        block.addMessage(getInitialMessage(submission.minerId));
         if (block.isValidMagicNumber(submission.magicNumber, zeroes)){
-            block.setMinedDetails(submission);
-            addToChain(block);
+            addSubmission(submission);
             return true;
         }
         return false;

@@ -28,9 +28,7 @@ class MessageSubmitter implements Runnable {
                 }
                 Message message = new Message(
                     Integer.toString(i++),
-                    "This message was generated on the timestamp " + new Date().getTime());
-                message.signature = Encryptor.sign(message.getPreliminaryHash(), privKey);
-                message.publicKey = pubKey;
+                    "This message was generated on the timestamp " + new Date().getTime(), privKey, pubKey);
                 blockchain.submitMessage(message);
                 Thread.sleep(delay);
             } catch (InterruptedException e) {
