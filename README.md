@@ -1,31 +1,32 @@
-# Work on project. Stage 3/6: Miner mania
+# Work on project. Stage 4/6: You’ve got a message
 
 ## Description
 
-The blockchain itself shouldn't create new blocks. The blockchain just keeps the chain valid and accepts the new blocks from outside. In the outside world, there are a lot of computers that try to create a new block. All they do is search for a magic number to create a block whose hash starts with some zeros. The first computer to do so is a winner, the blockchain accepts this new block, and then all these computers try to find a magic number for the next block.
+For now, we are mining blocks to create a blockchain, but just the blockchain itself is not particularly useful. The most useful information in the blockchain is the data that every block stores. The information can be anything. Let's create a simple chat based on the blockchain. If this blockchain works on the internet, it would be a world-wide chat. Everyone can add a line to this blockchain, but no one can edit it afterward. Every message would be visible to anyone.
 
-There is a special word for this: mining. The process of mining blocks is hard work for computers, like the process of mining minerals in real life is hard work. Computers that perform this task are called miners.
+In this stage, you need to upgrade the blockchain. A block should contain messages that the blockchain received during the creation of the previous block. When the block was created, all new messages should become a part of the new block, and all the miners should start to search for a magic number for this block. New messages, which were sent after this moment, shouldn't be included in this new block. Don't forget about thread synchronization as there is a lot of shared data.
 
-Note that if there are more miners, the new blocks will be mined faster. But the problem is that we want to create new blocks with a stable frequency. For this reason, the blockchain should regulate the number N: the number of zeros at the start of a hash of the new block. If suddenly there are so many miners that the new block is created in a matter of seconds, the complexity of the next block should be increased by increasing the number N. On the other hand, if there are so few miners that process of creating a new block takes longer than a minute, the number N should be lowered.
+You don't need any network connections as this is only a simulation of the blockchain. Use single blockchain and different clients that can send the message to the blockchain just invocating one method of the blockchain.
 
-In this stage, you should create a lot of threads with miners, and every one of them should contain the same blockchain. The miners should mine new blocks and the blockchain should regulate the number N. The blockchain should check the validity of the incoming block (ensure that the previous hash equals the hash of the last block of the blockchain and the hash of this new block starts with N zeros). At the start, the number N equals 0 and should be increased by 1 / decreased by 1 / stays the same after the creation of the new block based on the time of its creation.
+* So, the algorithm of adding messages is the following:
+* The first block doesn't contain any messages. Miners should find the magic number of this block.
+* During the search of the current block, the users can send the messages to the blockchain. The blockchain should keep them in a list until miners find a magic number and a new block would be created.
+* After the creation of the new block, all new messages that were sent during the creation should be included in a new block and deleted from the list.
+* After that, no more changes should be made to this block apart of the magic number. All new messages should be included in a list for the next block. The algorithm repeats from step 2.
+* Output example
+* To be tested successfully, program should output information about first five blocks of the blockchain. Blocks should be separated by an empty line.
 
-**Do not exit main method until you print 5 blocks! Output is checked right after exiting main method.**
-
-## Output example
-
-To be tested successfully, program should output information about first five blocks of the blockchain. Blocks should be separated by an empty line.
-
-``` java
+```java
 Block:
 Created by miner # 9
 Id: 1
 Timestamp: 1539866031047
-Magic number: 23462876
+Magic number: 92347626
 Hash of the previous block:
 0
 Hash of the block:
 1d12cbbb5bfa278734285d261051f5484807120032cf6adcca5b9a3dbf0e7bb3
+Block data: no messages
 Block was generating for 0 seconds
 N was increased to 1
 
@@ -33,11 +34,13 @@ Block:
 Created by miner # 7
 Id: 2
 Timestamp: 1539866031062
-Magic number: 63576287
+Magic number: 34678462
 Hash of the previous block:
 1d12cbbb5bfa278734285d261051f5484807120032cf6adcca5b9a3dbf0e7bb3
 Hash of the block:
 04a6735424357bf9af5a1467f8335e9427af714c0fb138595226d53beca5a05e
+Block data:
+Tom: Hey, I'm first!
 Block was generating for 0 seconds
 N was increased to 2
 
@@ -45,11 +48,15 @@ Block:
 Created by miner # 1
 Id: 3
 Timestamp: 1539866031063
-Magic number: 57875299
+Magic number: 56736428
 Hash of the previous block:
 04a6735424357bf9af5a1467f8335e9427af714c0fb138595226d53beca5a05e
 Hash of the block:
 0061924d48d5ce30e97cfc4297f3a40bc94dfac6af42d7bf366d236007c0b9d3
+Block data:
+Sarah: It's not fair!
+Sarah: You always will be first because it is your blockchain!
+Sarah: Anyway, thank you for this amazing chat.
 Block was generating for 0 seconds
 N was increased to 3
 
@@ -57,35 +64,14 @@ Block:
 Created by miner # 2
 Id: 4
 Timestamp: 1539866256729
-Magic number: 23468237
+Magic number: 37567682
 Hash of the previous block:
 0061924d48d5ce30e97cfc4297f3a40bc94dfac6af42d7bf366d236007c0b9d3
 Hash of the block:
 000856a20d767fbbc38e0569354400c1750381100984a09a5d8b1cdf09b0bab6
+Block data:
+Tom: You're welcome :)
+Nick: Hey Tom, nice chat
 Block was generating for 5 seconds
 N was increased to 4
-
-Block:
-Created by miner # 9
-Id: 5
-Timestamp: 1539866256749
-Magic number: 18748749
-Hash of the previous block:
-000856a20d767fbbc38e0569354400c1750381100984a09a5d8b1cdf09b0bab6
-Hash of the block:
-000031e22049646ca25c5f63fcc070e8c76319a050a7d1d5ca402090a30e9612
-Block was generating for 15 seconds
-N stays the same
-
-Block:
-Created by miner # 5
-Id: 6
-Timestamp: 1539866256750
-Magic number: 23423458
-Hash of the previous block:
-000031e22049646ca25c5f63fcc070e8c76319a050a7d1d5ca402090a30e9612
-Hash of the block:
-0000e3dc2b8fc5f0c635358aa19a84eae68c316a40d22d6283ab1152f486f003
-Block was generating for 65 seconds
-N was decreased by 1
 ```
