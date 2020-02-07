@@ -17,6 +17,7 @@ class Block implements Serializable {
     private int minedBy;
     private boolean isHashSet = false;
     private List<Message> messages;
+    private String preliminaryHash = null;
 
     Block(long id, String prevBlockHash) {
         this.id = id;
@@ -29,6 +30,10 @@ class Block implements Serializable {
 
     private String generateSelfSha256Hash(){
         return Encryptor.applySha256(getPreliminaryHash() + magicNumber);
+    }
+
+    private synchronized void generatePreliminaryHash() {
+        preliminaryHash = prevSha256Hash + id + timeStamp + messages.stream().map(m -> new String(m.signature)).reduce("", (p,n) -> p + n);
     }
 
     String getPrevBlockHash() {
@@ -51,17 +56,18 @@ class Block implements Serializable {
         return this.messages;
     }
 
-    void setMessages(List<Message> messages){
+    void setMessages(List<Message> messages){        
         this.messages = messages;
+        generatePreliminaryHash();
+    }
+
+    public String getPreliminaryHash(){
+        return preliminaryHash;
     }
 
     public boolean isValidMagicNumber(int magicNumber, int zeroes) {
         String sha256Hash = Encryptor.applySha256(getPreliminaryHash() + magicNumber);
         return sha256Hash.startsWith("0".repeat(zeroes));
-    }
-
-    public synchronized String getPreliminaryHash() {
-        return prevSha256Hash + id + timeStamp;
     }
 
     public synchronized void setMinedDetails(BlockchainSubmission submission){
@@ -70,7 +76,7 @@ class Block implements Serializable {
             this.magicNumber = submission.magicNumber;
             this.minedBy = submission.minerId;
             this.timeToGenerate = submission.timeToGenerate;
-            this.setSelfSha256Hash();
+            setSelfSha256Hash();
         }
     }
 

@@ -20,6 +20,10 @@ class Message implements Serializable {
         return (userId + message + id).getBytes();
     }
 
+    public byte[] getSignature(){
+        return signature;
+    }
+
     @Override
     public String toString() {
         return String.format("%03d", id) + "| User \"" + userId + "\" says: " + message;
