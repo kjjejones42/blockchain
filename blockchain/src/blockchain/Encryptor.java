@@ -61,20 +61,19 @@ class Encryptor {
             getPrivateKeyFromBytes(kf.privateKey);
             getPublicKeyFromBytes(kf.publicKey);
         } catch (Exception e) {
-            generatePublicAndPrivateKeys();
+            KeyPair kp = generatePublicAndPrivateKeys();  
+            privateKey = kp.getPrivate();
+            publicKey = kp.getPublic();          
+            saveKeysToFile();   
         }
 
     }
 
-    static private void generatePublicAndPrivateKeys(){
+    static public KeyPair generatePublicAndPrivateKeys(){
         try {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
             kpg.initialize(2048);
-            KeyPair keyPair = kpg.generateKeyPair();
-            
-            publicKey = keyPair.getPublic();
-            privateKey = keyPair.getPrivate();
-            saveKeysToFile();             
+            return kpg.generateKeyPair();          
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -173,28 +172,17 @@ class Encryptor {
     }
     
 
-	static byte[] sign(byte[] data) {
+	static byte[] sign(byte[] data, PrivateKey privKey) {
         try {
             Signature rsa = Signature.getInstance("SHA1withRSA"); 
-            rsa.initSign(getPrivateKey());
+            rsa.initSign(privKey);
             rsa.update(data);
             return rsa.sign();            
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-    
-	static boolean verifySignature(byte[] data, byte[] signature) {
-        try {
-            Signature sig = Signature.getInstance("SHA1withRSA");
-            sig.initVerify(getPublicKey());
-            sig.update(data);		
-            return sig.verify(signature);            
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
+        
     static byte[] AESDecrypt(byte[] input){
         try {
             Cipher c = Cipher.getInstance("AES");

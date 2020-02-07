@@ -51,7 +51,7 @@ class Blockchain implements Serializable {
             int lastMessageId = Integer.MIN_VALUE;
             for (Message message : block.getMessages()){
                 int id = message.id;
-                if (id > maxMessageId || id < lastMessageId ||!Encryptor.verifySignature(message.getPreliminaryHash(), message.signature)){
+                if (id > maxMessageId || id < lastMessageId || !message.isSignatureValid()){
                     return false;
                 }
                 lastMessageId = id;
@@ -62,9 +62,9 @@ class Blockchain implements Serializable {
 
     synchronized void submitMessage(Message message){
         message.id = messageId++;
-        message.signature = Encryptor.sign(message.getPreliminaryHash());
-        message.publicKey = Encryptor.getPublicKey();
-        messages.add(message);
+        if (message.isSignatureValid()){
+            messages.add(message);
+        }
     }
 
     synchronized void addToChain(Block block) {
