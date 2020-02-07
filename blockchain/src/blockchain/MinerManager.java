@@ -14,7 +14,7 @@ class MinerManager {
         this.blockchain = blockchain;
         this.executor = Executors.newFixedThreadPool(threads);
         for (int i = 0; i < threads; i++) {
-            miners.add(new Miner(i, blockchain));
+            miners.add(new Miner("miner" + i, blockchain));
         }
     }
 

@@ -14,7 +14,7 @@ class Block implements Serializable {
     private String selfSha256Hash = DEFAULTHASH;
     private int magicNumber;
     private long timeToGenerate;
-    private int minedBy;
+    private String minedBy;
     private boolean isHashSet = false;
     private List<Message> messages;
     private String preliminaryHash = null;
@@ -102,7 +102,8 @@ class Block implements Serializable {
     public String toString() {
         StringBuilder s =  new StringBuilder(
             "Block:\n" +
-            "Created by miner # " + minedBy + "\n" +
+            "Created by: " + minedBy + "\n" +
+            minedBy + " gets 100 VC\n" +
             "Id: " + id + "\n" +
             "Timestamp: " + timeStamp + "\n" +
             "Magic number: " + magicNumber + "\n" +

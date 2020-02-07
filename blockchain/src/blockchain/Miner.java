@@ -5,18 +5,18 @@ import java.util.concurrent.*;
 
 class Miner implements Callable<BlockchainSubmission> {
 
-    private final int id;
+    private final String id;
     private Block block;
     private Blockchain blockchain;
     private int leadingZeroes;
     private boolean isRunning;
 
-    Miner(int id, Blockchain blockchain) {
+    Miner(String id, Blockchain blockchain) {
         this.id = id;
         this.blockchain = blockchain;
     }
 
-    int getId(){
+    String getId(){
         return id;
     }
 
@@ -33,13 +33,13 @@ class Miner implements Callable<BlockchainSubmission> {
 
     @Override
     public String toString() {
-        return "Miner " + id;
+        return id;
     }
 
     @Override
     synchronized public BlockchainSubmission call() {
         isRunning = true;
-        Thread.currentThread().setName("Miner " + id);
+        Thread.currentThread().setName(id);
         long startTime = new Date().getTime();
 
         Random rand = new Random();
