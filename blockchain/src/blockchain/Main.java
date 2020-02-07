@@ -1,7 +1,6 @@
 package blockchain;
 
 import java.io.*;
-import javax.crypto.*;
 
 public class Main {
 
@@ -12,9 +11,8 @@ public class Main {
             FileInputStream fileIn = new FileInputStream(path);
             ObjectInputStream in = new ObjectInputStream(fileIn);
             SaveFile sf = (SaveFile) in.readObject();
-            SecretKey sk = Encryptor.loadSecretKey(sf.a);
-            Encryptor.setAESKey(sk);
-            Blockchain bc = Blockchain.class.cast(Encryptor.byteArrayToObject(Encryptor.AESDecrypt(sf.b)));
+            Encryptor.loadAESKeyFromBytes(sf.a);
+            Blockchain bc = Blockchain.class.cast(Encryptor.AESEncryptedBytesToObj(sf.b));
             in.close();
             return bc;
         } catch (IOException | ClassNotFoundException e) {

@@ -30,6 +30,7 @@ class Encryptor {
             throw new RuntimeException(e);
         }     
     }
+
     static private void getPublicKeyFromBytes(byte[] keyBytes){   
         try {
             X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
@@ -69,16 +70,6 @@ class Encryptor {
 
     }
 
-    static public KeyPair generatePublicAndPrivateKeys(){
-        try {
-            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-            kpg.initialize(2048);
-            return kpg.generateKeyPair();          
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-	
     static private SecretKey getAESKey(){
         try {
             if (AESKey == null){
@@ -96,6 +87,16 @@ class Encryptor {
         try {
             Cipher c = Cipher.getInstance("AES");
             c.init(Cipher.ENCRYPT_MODE, getAESKey());
+            return c.doFinal(input);            
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static private byte[] AESDecrypt(byte[] input){
+        try {
+            Cipher c = Cipher.getInstance("AES");
+            c.init(Cipher.DECRYPT_MODE, getAESKey());
             return c.doFinal(input);            
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -122,6 +123,30 @@ class Encryptor {
         }
     }
 
+    static private Object byteArrayToObject(byte[] arr){
+        try {
+            ByteArrayInputStream bis = new ByteArrayInputStream(arr);
+            ObjectInputStream oos = new ObjectInputStream(bis);
+            return oos.readObject();            
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static private void setAESKey(SecretKey sk){
+        AESKey = sk;
+    }
+
+    static KeyPair generatePublicAndPrivateKeys(){
+        try {
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+            kpg.initialize(2048);
+            return kpg.generateKeyPair();          
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+	
 	static PrivateKey getPrivateKey(){
         try {
             if (privateKey == null){
@@ -144,23 +169,9 @@ class Encryptor {
         }
     }
     
-    static Object byteArrayToObject(byte[] arr){
-        try {
-            ByteArrayInputStream bis = new ByteArrayInputStream(arr);
-            ObjectInputStream oos = new ObjectInputStream(bis);
-            return oos.readObject();            
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    static void setAESKey(SecretKey sk){
-        AESKey = sk;
-    }
-
-    static SecretKey loadSecretKey(byte[] encodedKey){
+    static void loadAESKeyFromBytes(byte[] encodedKey){
         encodedKey = RSADecrypt(encodedKey);
-        return new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
+        setAESKey(new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES"));
     }
 
     static byte[] getRSAEncryptedAESKey(){
@@ -169,19 +180,7 @@ class Encryptor {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-    
-        
-    static byte[] AESDecrypt(byte[] input){
-        try {
-            Cipher c = Cipher.getInstance("AES");
-            c.init(Cipher.DECRYPT_MODE, getAESKey());
-            return c.doFinal(input);            
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+    }     
 
     static byte[] objToAESEncryptedBytes(Object obj){
         try {
@@ -209,5 +208,9 @@ class Encryptor {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    static Object AESEncryptedBytesToObj(byte[] arr){
+        return AESDecrypt(arr);
     }
 }
