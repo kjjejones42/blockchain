@@ -5,11 +5,11 @@ import java.security.*;
 
 class Message implements Serializable {
     static final long serialVersionUID = 0;
-    final String userId;
-    final String message;
-    byte[] signature;
-    int id;
-    PublicKey publicKey;
+    private final String userId;
+    private final String message;
+    private byte[] signature;
+    private int id;
+    private PublicKey publicKey;
 
     Message(String userId, String message, PrivateKey privKey, PublicKey pubKey){
         this.userId = userId;
@@ -35,6 +35,14 @@ class Message implements Serializable {
 
     public byte[] getSignature(){
         return signature;
+    }
+
+    public int getId(){
+        return id;
+    }
+
+    public void setId(int id){
+        this.id = id;
     }
 
 	void sign(PrivateKey privKey, PublicKey pubKey) {

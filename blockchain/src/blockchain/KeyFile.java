@@ -4,6 +4,11 @@ import java.io.Serializable;
 
 class KeyFile implements Serializable {
     static final long serialVersionUID = 1;
-    byte[] publicKey;
-    byte[] privateKey;
+    final byte[] publicKey;
+    final byte[] privateKey;
+
+    KeyFile(byte[] publicKey, byte[] privateKey){
+        this.privateKey = privateKey;
+        this.publicKey = publicKey;
+    }
 }

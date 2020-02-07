@@ -33,6 +33,28 @@ class Blockchain implements Serializable {
         }
     }
 
+    synchronized private void generateNewBlockToMine(Block previousBlock){
+        blockToMine = new Block(previousBlock.getId() + 1, previousBlock.getSelfSha256Hash());            
+        blockToMine.setMessages(messages);
+        incrementMessageId();
+        initialMessageId = messageId;
+        this.messages = new ArrayList<>();
+    }
+
+    synchronized private void addApprovedSubmission(BlockchainSubmission submission) {
+        Block block = new Block(getBlockToMine());
+        block.addMessage(getInitialMessage(submission.minerId));
+        block.setMinedDetails(submission);
+        blockChain.add(block);
+
+        processNChange(block.getTimeToGenerate());
+        generateNewBlockToMine(block);
+    }
+
+    synchronized private void incrementMessageId(){
+        messageId++;        
+    }
+
     synchronized String getNChangeMessage() {
         return NChangeMessage;
     }
@@ -44,16 +66,15 @@ class Blockchain implements Serializable {
     synchronized boolean isBlockchainValid() {
         for (int i = 0; i < blockChain.size(); i++) {
             Block block = blockChain.get(i);
-            Block prevBlock = i == 0 ? null : blockChain.get(i - 1);
             String currHashOfPrev = block.getPrevBlockHash();
-            String prevHashActual = i == 0 ? Block.DEFAULTHASH : prevBlock.getSelfSha256Hash();
+            String prevHashActual = i == 0 ? Block.DEFAULTHASH : blockChain.get(i - 1).getSelfSha256Hash();
             if (!currHashOfPrev.equals(prevHashActual)) {
                 return false;
             }
-            int maxMessageId = block.getMessages().stream().mapToInt(message -> message.id).max().orElse(0);
+            int maxMessageId = block.getMessages().stream().mapToInt(message -> message.getId()).max().orElse(0);
             int lastMessageId = Integer.MIN_VALUE;
             for (Message message : block.getMessages()){
-                int id = message.id;
+                int id = message.getId();
                 if (id > maxMessageId || id < lastMessageId || !message.isSignatureValid()){
                     return false;
                 }
@@ -64,29 +85,15 @@ class Blockchain implements Serializable {
     }
 
     synchronized void submitMessage(Message message){
-        if (message.isSignatureValid()){
-            message.id = ++messageId;
+        if (message.isSignatureValid()){            
+            incrementMessageId();
+            message.setId(messageId);
             messages.add(message);
         }
     }
-
-    synchronized void addSubmission(BlockchainSubmission submission) {
-        Block block = new Block(getBlockToMine());
-        block.addMessage(getInitialMessage(submission.minerId));
-        block.setMinedDetails(submission);
-        blockChain.add(block);
-
-        processNChange(block.getTimeToGenerate());
-
-        blockToMine = new Block(block.getId() + 1, block.getSelfSha256Hash());            
-        blockToMine.setMessages(messages);
-        initialMessageId = ++messageId;
-        this.messages = new ArrayList<>();
-    }
-
     synchronized Message getInitialMessage(int minerId){
         Message message = new Message("Miner " + minerId, "Give me a coin", Encryptor.getPrivateKey(), Encryptor.getPublicKey());
-        message.id = initialMessageId;
+        message.setId(initialMessageId);
         return message;
     }
 
@@ -94,7 +101,7 @@ class Blockchain implements Serializable {
         Block block = new Block(getBlockToMine());        
         block.addMessage(getInitialMessage(submission.minerId));
         if (block.isValidMagicNumber(submission.magicNumber, zeroes)){
-            addSubmission(submission);
+            addApprovedSubmission(submission);
             return true;
         }
         return false;

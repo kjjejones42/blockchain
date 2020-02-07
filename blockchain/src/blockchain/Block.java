@@ -47,7 +47,7 @@ class Block implements Serializable {
     }
 
     private synchronized void generatePreliminaryHash() {
-        preliminaryHash = prevSha256Hash + id + timeStamp + messages.stream().map(m -> new String(m.signature)).reduce("", (p,n) -> p + n);
+        preliminaryHash = prevSha256Hash + id + timeStamp + messages.stream().map(m -> new String(m.getSignature())).reduce("", (p,n) -> p + n);
     }
 
     String getPrevBlockHash() {

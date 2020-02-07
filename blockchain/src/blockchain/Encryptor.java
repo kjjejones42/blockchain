@@ -42,9 +42,9 @@ class Encryptor {
 
     static private void saveKeysToFile(){
         try {
-            KeyFile kf = new KeyFile();
-            kf.privateKey = getPrivateKey().getEncoded();
-            kf.publicKey = getPublicKey().getEncoded();
+            KeyFile kf = new KeyFile(
+                getPublicKey().getEncoded(),
+                getPrivateKey().getEncoded());
             FileOutputStream fos = new FileOutputStream(KEYS_PATH);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(kf);

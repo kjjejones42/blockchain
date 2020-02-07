@@ -26,9 +26,9 @@ public class Main {
     private static void save(Blockchain bc, String path) {
         synchronized (bc) {
             try {
-                SaveFile sf = new SaveFile();
-                sf.RSAEncryptedAESKey = Encryptor.getRSAEncryptedAESKey();
-                sf.AESEncryptedFile = Encryptor.objToAESEncryptedBytes(bc);
+                SaveFile sf = new SaveFile(
+                    Encryptor.getRSAEncryptedAESKey(),
+                    Encryptor.objToAESEncryptedBytes(bc));
                 FileOutputStream fileOut = new FileOutputStream(path);
                 ObjectOutputStream out = new ObjectOutputStream(fileOut);
                 out.writeObject(sf);
