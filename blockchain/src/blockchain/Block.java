@@ -16,7 +16,7 @@ class Block implements Serializable {
     private long timeToGenerate;
     private String minedBy;
     private boolean isHashSet = false;
-    private List<Transaction> messages;
+    private List<Transaction> transactions;
     private String preliminaryHash = null;
 
     Block(long id, String prevBlockHash) {
@@ -34,7 +34,7 @@ class Block implements Serializable {
         this.timeToGenerate = block.timeToGenerate;
         this.minedBy = block.minedBy;
         this.isHashSet = block.isHashSet;
-        this.messages = new ArrayList<>(block.messages);
+        this.transactions = new ArrayList<>(block.transactions);
         this.preliminaryHash = block.preliminaryHash;        
     }
 
@@ -47,7 +47,7 @@ class Block implements Serializable {
     }
 
     private synchronized void generatePreliminaryHash() {
-        preliminaryHash = prevSha256Hash + id + timeStamp + messages.stream().map(m -> new String(m.getSignature())).reduce("", (p,n) -> p + n);
+        preliminaryHash = prevSha256Hash + id + timeStamp + transactions.stream().map(m -> new String(m.getSignature())).reduce("", (p,n) -> p + n);
     }
 
     String getPrevBlockHash() {
@@ -66,17 +66,17 @@ class Block implements Serializable {
         return this.timeToGenerate;
     }
 
-    List<Transaction> getMessages(){
-        return this.messages;
+    List<Transaction> getTransactions(){
+        return this.transactions;
     }
 
-    void setMessages(List<Transaction> messages){        
-        this.messages = messages;
+    void setTransactions(List<Transaction> transactions){        
+        this.transactions = transactions;
         generatePreliminaryHash();
     }
 
-    void addMessage(Transaction message){
-        messages.add(message);
+    void addTransaction(Transaction transaction){
+        transactions.add(transaction);
     }
 
     public String getPreliminaryHash(){
@@ -103,19 +103,21 @@ class Block implements Serializable {
         StringBuilder s =  new StringBuilder(
             "Block:\n" +
             "Created by: " + minedBy + "\n" +
-            minedBy + " gets 100 VC\n" +
+            minedBy + " gets " + Blockchain.REWARD_PER_BLOCK + " VC\n" +
             "Id: " + id + "\n" +
             "Timestamp: " + timeStamp + "\n" +
             "Magic number: " + magicNumber + "\n" +
             "Hash of the previous block:\n" + prevSha256Hash + "\n" +
             "Hash of the block:\n" + selfSha256Hash + 
             "\nBlock data: ");
-        if (!messages.isEmpty()){
-            for (Transaction message : messages){
-                s.append("\n").append(message.toString());
+        if (!transactions.isEmpty()){
+            for (Transaction transaction : transactions){
+                if (!transaction.isAdminTransaction()){
+                    s.append("\n").append(transaction.toString());
+                }
             }
         } else {
-            s.append("no messages");
+            s.append("no Transactions");
         }
         s.append("\nBlock was generating for " + timeToGenerate / 1000f + " seconds");
         return s.toString();

@@ -6,19 +6,21 @@ import java.util.*;
 class Blockchain implements Serializable {
 
     static final long serialVersionUID = 1;
+    static final String SELF_TRANSACTION_ID = "SELF_TRANSACTION_ID";
+    static final float REWARD_PER_BLOCK = 100f;
 
     private int zeroes;
-    private int messageId = 1;
+    private int transactionId = 1;
     private final List<Block> blockChain = new ArrayList<>();
     private Block blockToMine;
     private String NChangeMessage;
-    private List<Transaction> messages = new ArrayList<>();
-    private int initialMessageId = messageId;
+    private List<Transaction> transactions = new ArrayList<>();
+    private int initialTransactionId = transactionId;
 
     Blockchain(int zeroes) {
         this.zeroes = zeroes;
         blockToMine = new Block(1, Block.DEFAULTHASH);
-        blockToMine.setMessages(new ArrayList<>());
+        blockToMine.setTransactions(new ArrayList<>());
     }
 
     private synchronized void processNChange(long timeToGenerate){
@@ -35,15 +37,15 @@ class Blockchain implements Serializable {
 
     synchronized private void generateNewBlockToMine(Block previousBlock){
         blockToMine = new Block(previousBlock.getId() + 1, previousBlock.getSelfSha256Hash());            
-        blockToMine.setMessages(messages);
-        incrementMessageId();
-        initialMessageId = messageId;
-        this.messages = new ArrayList<>();
+        blockToMine.setTransactions(transactions);
+        incrementTransactionId();
+        initialTransactionId = transactionId;
+        this.transactions = new ArrayList<>();
     }
 
     synchronized private void addApprovedSubmission(BlockchainSubmission submission) {
         Block block = new Block(getBlockToMine());
-        block.addMessage(getInitialMessage(submission.minerId));
+        block.addTransaction(getInitialTransaction(submission.minerId));
         block.setMinedDetails(submission);
         blockChain.add(block);
 
@@ -51,8 +53,8 @@ class Blockchain implements Serializable {
         generateNewBlockToMine(block);
     }
 
-    synchronized private void incrementMessageId(){
-        messageId++;        
+    synchronized private void incrementTransactionId(){
+        transactionId++;        
     }
 
     synchronized String getNChangeMessage() {
@@ -71,36 +73,36 @@ class Blockchain implements Serializable {
             if (!currHashOfPrev.equals(prevHashActual)) {
                 return false;
             }
-            int maxMessageId = block.getMessages().stream().mapToInt(message -> message.getId()).max().orElse(Integer.MAX_VALUE);
-            int lastMessageId = Integer.MIN_VALUE;
-            for (Transaction message : block.getMessages()){
-                int id = message.getId();
-                if (id > maxMessageId || id < lastMessageId || !message.isSignatureValid()){
+            int maxTransactionId = block.getTransactions().stream().mapToInt(Transaction -> Transaction.getId()).max().orElse(Integer.MAX_VALUE);
+            int lastTransactionId = Integer.MIN_VALUE;
+            for (Transaction transaction : block.getTransactions()){
+                int id = transaction.getId();
+                if (!transaction.isAdminTransaction() && (id > maxTransactionId || id < lastTransactionId || !transaction.isSignatureValid())){
                     return false;
                 }
-                lastMessageId = id;
+                lastTransactionId = id;
             }
         }
         return true;
     }
 
-    synchronized void submitMessage(Transaction message){
-        if (message.isSignatureValid()){            
-            incrementMessageId();
-            message.setId(messageId);
-            messages.add(message);
+    synchronized void submitTransaction(Transaction transaction){
+        if (transaction.isSignatureValid()){            
+            incrementTransactionId();
+            transaction.setId(transactionId);
+            transactions.add(transaction);
         }
     }
-    synchronized Transaction getInitialMessage(String minerId){
+    synchronized Transaction getInitialTransaction(String minerId){
         Encryptor e = Encryptor.getInstance();
-        Transaction message = new Transaction(minerId, minerId, 100f, e.getPrivateKey(), e.getPublicKey());
-        message.setId(initialMessageId);
-        return message;
+        Transaction transaction = new Transaction(Blockchain.SELF_TRANSACTION_ID, minerId, REWARD_PER_BLOCK, e.getPrivateKey(), e.getPublicKey());
+        transaction.setId(initialTransactionId);
+        return transaction;
     }
 
     synchronized boolean submitSubmission(BlockchainSubmission submission){
         Block block = new Block(getBlockToMine());        
-        block.addMessage(getInitialMessage(submission.minerId));
+        block.addTransaction(getInitialTransaction(submission.minerId));
         if (block.isValidMagicNumber(submission.magicNumber, zeroes)){
             addApprovedSubmission(submission);
             return true;

@@ -5,21 +5,24 @@ import java.security.*;
 
 class Transaction implements Serializable {
     static final long serialVersionUID = 0;
-    private final String from;
-    private final String to;
-    private final float amount;
+    final String from;
+    final String to;
+    final float amount;
     private byte[] signature;
     private int id;
     private PublicKey publicKey;
 
-    Transaction(String userId, String message, float amount, PrivateKey privKey, PublicKey pubKey){
-        this.from = userId;
-        this.to = message;
+    Transaction(String from, String to, float amount, PrivateKey privKey, PublicKey pubKey){
+        this.from = from;
+        this.to = to;
         this.amount = amount;
         sign(privKey, pubKey);
     }
 
-    public boolean isSignatureValid(){        
+    public boolean isSignatureValid(){    
+        if (isAdminTransaction()){
+            return true;
+        }    
         try {
             Signature sig = Signature.getInstance("SHA1withRSA");
             sig.initVerify(publicKey);
@@ -29,6 +32,10 @@ class Transaction implements Serializable {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    public boolean isAdminTransaction(){
+        return from.equals(Blockchain.SELF_TRANSACTION_ID);
     }
 
     public byte[] getPreliminaryHash(){
@@ -49,7 +56,7 @@ class Transaction implements Serializable {
 
 	void sign(PrivateKey privKey, PublicKey pubKey) {
         if (signature != null){
-            throw new RuntimeException("Attempted to sign a message that is already signed");
+            throw new RuntimeException("Attempted to sign a transaction that is already signed");
         }
         try {
             publicKey = pubKey;
@@ -64,6 +71,6 @@ class Transaction implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("%03d", id) + "| User \"" + from + "\" gave \"" + to + "\" " + amount;
+        return "User \"" + from + "\" gave \"" + to + "\" " + amount;
     }
 }

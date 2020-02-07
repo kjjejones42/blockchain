@@ -2,13 +2,13 @@ package blockchain;
 
 import java.security.*;
 
-class MessageSubmitter implements Runnable {
+class TransactionSubmitter implements Runnable {
     private Blockchain blockchain;
     private PrivateKey privKey;
     private PublicKey pubKey;
     private int delay;
 
-    MessageSubmitter(Blockchain blockchain, int delay){
+    TransactionSubmitter(Blockchain blockchain, int delay){
         this.blockchain = blockchain;
         this.delay = delay;
         KeyPair kp = Encryptor.getInstance().generatePublicAndPrivateKeys();
@@ -19,16 +19,16 @@ class MessageSubmitter implements Runnable {
     @Override
     public void run() {
         int i = 1;
-        Thread.currentThread().setName("Blockchain Message Submitter");
+        Thread.currentThread().setName("Blockchain Transaction Submitter");
         while (true){
             try {
                 if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
-                Transaction message = new Transaction(
+                Transaction Transaction = new Transaction(
                     Integer.toString(i++),
                     "noone", 0f, privKey, pubKey);
-                blockchain.submitMessage(message);
+                blockchain.submitTransaction(Transaction);
                 Thread.sleep(delay);
             } catch (InterruptedException e) {
                 return;

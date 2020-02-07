@@ -27,8 +27,8 @@ class Miner implements Callable<BlockchainSubmission> {
     void set(Block block, int leadingZeroes) {
         this.block = new Block(block);
         this.leadingZeroes = leadingZeroes;
-        Transaction message = blockchain.getInitialMessage(id);
-        this.block.addMessage(message);
+        Transaction transaction = blockchain.getInitialTransaction(id);
+        this.block.addTransaction(transaction);
     }
 
     @Override
