@@ -17,11 +17,17 @@ class Encryptor {
  
     private static final String KEYS_PATH = "keys.db";
 
+    private static Encryptor instance;
+
+    private final KeyFactory kf;
+    private final Cipher AESCipher;
+    private final Cipher RSACipher;
+    private final KeyPairGenerator kpg;
+
     private PrivateKey privateKey;
     private PublicKey publicKey;
     private SecretKey AESKey;
-
-    private static Encryptor instance;
+    
 
     static public Encryptor getInstance(){
         if (instance == null){
@@ -29,13 +35,24 @@ class Encryptor {
         }
         return instance;
     }
+
+    Encryptor(){
+        try {
+            kf = KeyFactory.getInstance("RSA");            
+            AESCipher = Cipher.getInstance("AES");        
+            RSACipher = Cipher.getInstance("RSA");
+            kpg = KeyPairGenerator.getInstance("RSA");            
+            kpg.initialize(2048);            
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new RuntimeException(e);
+        }
+    }
         
     private void getPrivateKeyFromBytes(byte[] keyBytes){   
         try {
             PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-            KeyFactory kf = KeyFactory.getInstance("RSA");
             privateKey = kf.generatePrivate(spec);               
-        } catch (Exception e) {
+        } catch (InvalidKeySpecException e) {
             throw new RuntimeException(e);
         }     
     }
@@ -43,7 +60,6 @@ class Encryptor {
     private void getPublicKeyFromBytes(byte[] keyBytes){   
         try {
             X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-            KeyFactory kf = KeyFactory.getInstance("RSA");
             publicKey = kf.generatePublic(spec);               
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -94,9 +110,8 @@ class Encryptor {
 
     private byte[] AESEncrypt(byte[] input){
         try {
-            Cipher c = Cipher.getInstance("AES");
-            c.init(Cipher.ENCRYPT_MODE, getAESKey());
-            return c.doFinal(input);     
+            AESCipher.init(Cipher.ENCRYPT_MODE, getAESKey());
+            return AESCipher.doFinal(input);     
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -104,9 +119,8 @@ class Encryptor {
 
     private byte[] AESDecrypt(byte[] input){
         try {
-            Cipher c = Cipher.getInstance("AES");
-            c.init(Cipher.DECRYPT_MODE, getAESKey());
-            return c.doFinal(input);   
+            AESCipher.init(Cipher.DECRYPT_MODE, getAESKey());
+            return AESCipher.doFinal(input);   
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -114,9 +128,8 @@ class Encryptor {
 
     private byte[] RSAEncrypt(byte[] input){
         try {
-            Cipher c = Cipher.getInstance("RSA");
-            c.init(Cipher.ENCRYPT_MODE, getPublicKey());
-            return c.doFinal(input);            
+            RSACipher.init(Cipher.ENCRYPT_MODE, getPublicKey());
+            return RSACipher.doFinal(input);            
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -124,9 +137,8 @@ class Encryptor {
 
     private byte[] RSADecrypt(byte[] input){
         try {
-            Cipher c = Cipher.getInstance("RSA");
-            c.init(Cipher.DECRYPT_MODE, getPrivateKey());
-            return c.doFinal(input);            
+            RSACipher.init(Cipher.DECRYPT_MODE, getPrivateKey());
+            return RSACipher.doFinal(input);            
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -148,8 +160,6 @@ class Encryptor {
 
     KeyPair generatePublicAndPrivateKeys(){
         try {
-            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-            kpg.initialize(2048);
             return kpg.generateKeyPair();          
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -214,7 +224,7 @@ class Encryptor {
     }
 
     String applySha256(String input) {
-        try {
+        try {            
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
             StringBuilder hexString = new StringBuilder();
