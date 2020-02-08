@@ -15,7 +15,7 @@ class MinerManager {
         this.blockchain = blockchain;
         Miner[] arr = new Miner[threads];
         for (int i = 0; i < threads; i++){
-            arr[i] = new Miner("miner" + i);
+            arr[i] = new Miner("Miner" + String.format("%02d",i + 1));
         }
         miners = List.of(arr);
         executor = Executors.newFixedThreadPool(threads);
@@ -42,13 +42,12 @@ class MinerManager {
                 BlockchainSubmission result = executor.invokeAny(miners);
                 done = blockchain.submitSubmission(result);
                 if (!blockchain.isBlockchainValid()){
-                    throw new Exception("Blockchain is invalid");
+                    throw new RuntimeException("Blockchain is invalid");
                 }
             }
-        } catch (Exception e) {            
+        } catch (InterruptedException | ExecutionException e) {         
             close();
             throw new RuntimeException(e);
         }
     }
-
 }
