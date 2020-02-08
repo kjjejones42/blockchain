@@ -8,6 +8,7 @@ class Blockchain implements Serializable {
     static final long serialVersionUID = 1;
     static final String SELF_TRANSACTION_ID = "SELF_TRANSACTION_ID";
     static final float REWARD_PER_BLOCK = 100f;
+    static final String COIN_NAME = "VC";
 
     private int zeroes;
     private int transactionId = 1;
@@ -15,12 +16,11 @@ class Blockchain implements Serializable {
     private Block blockToMine;
     private String NChangeMessage;
     private List<Transaction> transactions = new ArrayList<>();
-    private int initialTransactionId = transactionId;
+    private int initialTransactionId;
 
     Blockchain(int zeroes) {
         this.zeroes = zeroes;
-        blockToMine = new Block(1, Block.DEFAULTHASH);
-        blockToMine.setTransactions(new ArrayList<>());
+        generateNewBlockToMine(null);
     }
 
     private synchronized void processNChange(long timeToGenerate){
@@ -36,21 +36,39 @@ class Blockchain implements Serializable {
     }
 
     synchronized private void generateNewBlockToMine(Block previousBlock){
-        blockToMine = new Block(previousBlock.getId() + 1, previousBlock.getSelfSha256Hash());            
-        blockToMine.setTransactions(transactions);
+        if (previousBlock == null) {            
+            blockToMine = new Block(1, Block.DEFAULTHASH);
+        } else {
+            blockToMine = new Block(previousBlock.getId() + 1, previousBlock.getSelfSha256Hash());   
+        }
+        int min = transactions.stream().mapToInt(t -> t.getId()).min().orElse(2);
         incrementTransactionId();
-        initialTransactionId = transactionId;
+        initialTransactionId = min - 1;
+        blockToMine.setTransactions(transactions);
         this.transactions = new ArrayList<>();
     }
 
-    synchronized private void addApprovedSubmission(BlockchainSubmission submission) {
-        Block block = new Block(getBlockToMine());
-        block.addTransaction(getInitialTransaction(submission.minerId));
+    synchronized private void addApprovedSubmission(Block block, BlockchainSubmission submission) {
         block.setMinedDetails(submission);
         blockChain.add(block);
 
         processNChange(block.getTimeToGenerate());
         generateNewBlockToMine(block);
+    }
+
+    synchronized private Block getNewBlockForMinerId(String minerId){        
+        Block block = new Block(blockToMine);
+        Transaction reward = getRewardTransaction(minerId);
+        block.addTransaction(reward);
+        block.sortTransactions();
+        return block;        
+    }
+
+    synchronized private Transaction getRewardTransaction(String minerId){
+        Encryptor e = Encryptor.getInstance();
+        Transaction transaction = new Transaction(Blockchain.SELF_TRANSACTION_ID, minerId, REWARD_PER_BLOCK, e.getPrivateKey(), e.getPublicKey());
+        transaction.setId(initialTransactionId);
+        return transaction;
     }
 
     synchronized private void incrementTransactionId(){
@@ -93,18 +111,11 @@ class Blockchain implements Serializable {
             transactions.add(transaction);
         }
     }
-    synchronized Transaction getInitialTransaction(String minerId){
-        Encryptor e = Encryptor.getInstance();
-        Transaction transaction = new Transaction(Blockchain.SELF_TRANSACTION_ID, minerId, REWARD_PER_BLOCK, e.getPrivateKey(), e.getPublicKey());
-        transaction.setId(initialTransactionId);
-        return transaction;
-    }
 
     synchronized boolean submitSubmission(BlockchainSubmission submission){
-        Block block = new Block(getBlockToMine());        
-        block.addTransaction(getInitialTransaction(submission.minerId));
+        Block block = new Block(getBlockToMine(submission.minerId));       
         if (block.isValidMagicNumber(submission.magicNumber, zeroes)){
-            addApprovedSubmission(submission);
+            addApprovedSubmission(block, submission);
             return true;
         }
         return false;
@@ -114,8 +125,8 @@ class Blockchain implements Serializable {
         return blockChain.isEmpty() ? null : blockChain.get(blockChain.size() - 1);
     }
 
-    synchronized Block getBlockToMine() {
-        return blockToMine;
+    synchronized Block getBlockToMine(String minerId) {
+        return getNewBlockForMinerId(minerId);
     }
 
     synchronized void incrementZeroes() {

@@ -79,6 +79,10 @@ class Block implements Serializable {
         transactions.add(transaction);
     }
 
+    void sortTransactions(){
+        transactions.sort((a,b) -> a.getId() - b.getId());
+    }
+
     public String getPreliminaryHash(){
         return preliminaryHash;
     }
@@ -103,7 +107,7 @@ class Block implements Serializable {
         StringBuilder s =  new StringBuilder(
             "Block:\n" +
             "Created by: " + minedBy + "\n" +
-            minedBy + " gets " + Blockchain.REWARD_PER_BLOCK + " VC\n" +
+            minedBy + " gets " + Blockchain.REWARD_PER_BLOCK + " " + Blockchain.COIN_NAME + "\n" +
             "Id: " + id + "\n" +
             "Timestamp: " + timeStamp + "\n" +
             "Magic number: " + magicNumber + "\n" +
@@ -112,9 +116,7 @@ class Block implements Serializable {
             "\nBlock data: ");
         if (!transactions.isEmpty()){
             for (Transaction transaction : transactions){
-                if (!transaction.isAdminTransaction()){
-                    s.append("\n").append(transaction.toString());
-                }
+                s.append("\n").append(transaction.toString());
             }
         } else {
             s.append("no Transactions");

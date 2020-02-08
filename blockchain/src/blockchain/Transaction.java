@@ -71,6 +71,9 @@ class Transaction implements Serializable {
 
     @Override
     public String toString() {
-        return "User \"" + from + "\" gave \"" + to + "\" " + amount;
+        if (isAdminTransaction()){
+            return  String.format("% 3d",id) + " | \"" + to + "\" was awarded " + amount + " " + Blockchain.COIN_NAME + " for mining the block.";
+        }
+        return String.format("% 3d",id) + " | User \"" + from + "\" gave \"" + to + "\" " + amount;
     }
 }

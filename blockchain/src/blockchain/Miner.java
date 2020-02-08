@@ -7,13 +7,11 @@ class Miner implements Callable<BlockchainSubmission> {
 
     private final String id;
     private Block block;
-    private Blockchain blockchain;
     private int leadingZeroes;
     private boolean isRunning;
 
-    Miner(String id, Blockchain blockchain) {
+    Miner(String id) {
         this.id = id;
-        this.blockchain = blockchain;
     }
 
     String getId(){
@@ -27,8 +25,6 @@ class Miner implements Callable<BlockchainSubmission> {
     synchronized void set(Block block, int leadingZeroes) {
         this.block = new Block(block);
         this.leadingZeroes = leadingZeroes;
-        Transaction transaction = blockchain.getInitialTransaction(id);
-        this.block.addTransaction(transaction);
     }
 
     @Override
