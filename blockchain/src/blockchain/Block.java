@@ -2,6 +2,7 @@ package blockchain;
 
 import java.io.Serializable;
 import java.util.*;
+import java.security.*;
 
 class Block implements Serializable {
 
@@ -18,6 +19,7 @@ class Block implements Serializable {
     private boolean isHashSet = false;
     private List<Transaction> transactions;
     private String preliminaryHash = null;
+    private transient MessageDigest digest;
 
     Block(long id, String prevBlockHash) {
         this.timeStamp = new Date().getTime();
@@ -38,12 +40,31 @@ class Block implements Serializable {
         this.preliminaryHash = block.preliminaryHash;        
     }
 
+    private String applySha256(String input) {
+        try {
+            if (digest == null){
+                digest = MessageDigest.getInstance("SHA-256");
+            }
+            byte[] hash = digest.digest(input.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte elem : hash) {
+                String hex = Integer.toHexString(0xff & elem);
+                if (hex.length() == 1)
+                    hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void setSelfSha256Hash() {
         this.selfSha256Hash = generateSelfSha256Hash();
     }
 
     private String generateSelfSha256Hash(){
-        return Encryptor.getInstance().applySha256(getPreliminaryHash() + magicNumber);
+        return applySha256(getPreliminaryHash() + magicNumber);
     }
 
     private synchronized void generatePreliminaryHash() {
@@ -88,7 +109,7 @@ class Block implements Serializable {
     }
 
     public boolean isValidMagicNumber(int magicNumber, int zeroes) {
-        String sha256Hash = Encryptor.getInstance().applySha256(getPreliminaryHash() + magicNumber);
+        String sha256Hash = applySha256(getPreliminaryHash() + magicNumber);
         return sha256Hash.startsWith("0".repeat(zeroes));
     }
 

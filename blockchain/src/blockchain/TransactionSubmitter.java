@@ -22,7 +22,6 @@ class TransactionSubmitter implements Runnable {
     
     @Override
     public void run() {
-        int i = 1;
         Thread.currentThread().setName("Blockchain Transaction Submitter");
         while (true){
             try {
@@ -35,10 +34,8 @@ class TransactionSubmitter implements Runnable {
                 while (to.equals(from)){
                     to = minerIds.get(rand.nextInt(minerIds.size()));
                 }
-                Transaction transaction = new Transaction(
-                    from,
-                    to, rand.nextFloat() * 100, privKey, pubKey);
-                new Thread(() -> blockchain.submitTransaction(transaction)).start();
+                Transaction transaction = new Transaction(from, to, rand.nextFloat() * 100, privKey, pubKey);
+                blockchain.submitTransaction(transaction);
                 Thread.sleep(delay);
             } catch (InterruptedException e) {
                 return;
