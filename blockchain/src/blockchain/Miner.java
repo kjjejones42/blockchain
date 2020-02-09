@@ -33,7 +33,7 @@ class Miner implements Callable<BlockchainSubmission> {
     }
 
     @Override
-    synchronized public BlockchainSubmission call() {
+    public synchronized BlockchainSubmission call() {
         try {                
             isRunning = true;
             Thread.currentThread().setName(id);

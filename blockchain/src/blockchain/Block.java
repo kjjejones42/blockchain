@@ -104,16 +104,16 @@ class Block implements Serializable {
         transactions.sort((a,b) -> a.getId() - b.getId());
     }
 
-    public String getPreliminaryHash(){
+    String getPreliminaryHash(){
         return preliminaryHash;
     }
 
-    public boolean isValidMagicNumber(int magicNumber, int zeroes) {
+    boolean isValidMagicNumber(int magicNumber, int zeroes) {
         String sha256Hash = applySha256(getPreliminaryHash() + magicNumber);
         return sha256Hash.startsWith("0".repeat(zeroes));
     }
 
-    public synchronized void setMinedDetails(BlockchainSubmission submission){
+    synchronized void setMinedDetails(BlockchainSubmission submission){
         if (!isHashSet && isValidMagicNumber(submission.magicNumber, submission.zeroes)){
             isHashSet = true;
             this.magicNumber = submission.magicNumber;

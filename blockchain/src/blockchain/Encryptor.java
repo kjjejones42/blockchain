@@ -27,7 +27,7 @@ class Encryptor {
     private SecretKey AESKey;
     
 
-    static public Encryptor getInstance(){
+    static Encryptor getInstance(){
         if (instance == null){
             instance = new Encryptor();
         }

@@ -19,7 +19,7 @@ class Transaction implements Serializable {
         sign(privKey, pubKey);
     }
 
-    public boolean isSignatureValid(){    
+    boolean isSignatureValid(){    
         if (isAdminTransaction()){
             return true;
         }    
@@ -34,23 +34,23 @@ class Transaction implements Serializable {
         }
     }
     
-    public boolean isAdminTransaction(){
+    boolean isAdminTransaction(){
         return from.equals(Blockchain.SELF_TRANSACTION_ID);
     }
 
-    public byte[] getPreliminaryHash(){
+    byte[] getPreliminaryHash(){
         return (from + to + amount).getBytes();
     }
 
-    public byte[] getSignature(){
+    byte[] getSignature(){
         return signature;
     }
 
-    public int getId(){
+    int getId(){
         return id;
     }
 
-    public void setId(int id){
+    void setId(int id){
         this.id = id;
     }
 

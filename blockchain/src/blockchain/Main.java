@@ -2,7 +2,7 @@ package blockchain;
 
 import java.io.*;
 
-public class Main {
+class Main {
 
     private static String PATH = "blockchain.db";
     private static Encryptor encryptor;
@@ -40,7 +40,7 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         encryptor = Encryptor.getInstance();
         final Blockchain blockchain;
         if (new File(PATH).exists()) {
