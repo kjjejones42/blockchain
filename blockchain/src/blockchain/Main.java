@@ -40,7 +40,7 @@ class Main {
         }
     }
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
         encryptor = Encryptor.getInstance();
         final Blockchain blockchain;
         if (new File(PATH).exists()) {
