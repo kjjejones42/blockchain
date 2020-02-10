@@ -20,7 +20,7 @@ class Blockchain implements Serializable {
     private List<Transaction> transactions = new ArrayList<>();
     private int initialTransactionId;
     private Map<String, Integer> userTotalMap;
-    private Map<String, PublicKey> userMap;
+    private Map<String, PublicKey> userMap = new HashMap<>();
 
     Blockchain(int zeroes) {
         this.zeroes = zeroes;
@@ -40,12 +40,29 @@ class Blockchain implements Serializable {
     }
 
     private synchronized void addTransactionToMap(Transaction transaction){
+        
+        String to = transaction.getTo();
+        if (!userMap.containsKey(to)){
+            userMap.put(to, null);
+        }
+
+        String from = transaction.getFrom();
+        if (!userMap.containsKey(from) || userMap.get(from) == null){
+            userMap.put(from, transaction.getPublicKey());
+        }
+
         int amount = transaction.getAmount();
-        userTotalMap.merge(transaction.getTo(), amount, Integer::sum);
-        userTotalMap.merge(transaction.getFrom(), -1 * amount, Integer::sum);
+        var totalMap = getTotalMap();
+        synchronized (totalMap){
+            totalMap.merge(transaction.getTo(), amount, Integer::sum);
+            totalMap.merge(transaction.getFrom(), -1 * amount, Integer::sum);
+        }
+        if (totalMap.entrySet().stream().filter(t -> !t.getKey().equals(SELF_TRANSACTION_ID)).mapToInt(i -> i.getValue()).filter(i -> (i < 0)).count() > 0){
+            throw new RuntimeException();
+        }
     }
 
-    private synchronized void generateMap(){    
+    private synchronized Map<String, Integer> generateMap(){    
         Set<Transaction> tran = blockChain.stream().flatMap(b -> b.getTransactions().stream()).collect(Collectors.toSet());        
         tran.addAll(blockToMine.getTransactions());
         tran.addAll(transactions);
@@ -63,7 +80,7 @@ class Blockchain implements Serializable {
                 Map.Entry::getValue,
                 (p, n) -> p + n));
         map.remove(SELF_TRANSACTION_ID);
-        userTotalMap = map;
+        return map;
     }
 
     synchronized private void generateNewBlockToMine(Block previousBlock){
@@ -79,12 +96,21 @@ class Blockchain implements Serializable {
         this.transactions = new ArrayList<>();
     }
 
-    synchronized private void addApprovedSubmission(Block block, BlockchainSubmission submission) {
+
+    synchronized private void addApprovedSubmission(Block block, BlockchainSubmission submission) {        
+        addTransactionToMap(block.getTransactions().get(0));
         block.setMinedDetails(submission);
         blockChain.add(block);
 
         processNChange(block.getTimeToGenerate());
         generateNewBlockToMine(block);
+    }
+
+    synchronized private void addApprovedTransaction(Transaction transaction){        
+        incrementTransactionId();
+        transaction.setId(transactionId);
+        addTransactionToMap(transaction);
+        transactions.add(transaction);
     }
 
     synchronized private Block getNewBlockForMinerId(String minerId){        
@@ -106,12 +132,23 @@ class Blockchain implements Serializable {
         transactionId++;        
     }
 
-    synchronized int getUserCredit(String userId){
-        Integer result = getMap().get(userId);        
-        return result == null ? 0 : result;
+    synchronized List<String> getUsers(){
+        List<String> list = new ArrayList<>(userMap.keySet());
+        list.remove(SELF_TRANSACTION_ID);
+        return list;
     }
 
-    synchronized Map<String, Integer> getMap(){
+    synchronized boolean isTransactionValid(String userId, int amount){
+        Map map = getTotalMap();
+        synchronized (getTotalMap()) {
+            Integer credit = getTotalMap().get(userId);        
+            credit = credit == null ? 0 : credit;
+            boolean result = credit >= amount;
+            return result;
+        }
+    }
+
+    synchronized Map<String, Integer> getTotalMap(){
         if (userTotalMap == null){
             generateMap();
         }
@@ -149,12 +186,14 @@ class Blockchain implements Serializable {
     }
 
     synchronized void submitTransaction(Transaction transaction){
-        if (transaction.isSignatureValid() && getUserCredit(transaction.getFrom()) > transaction.getAmount()){            
-            incrementTransactionId();
-            transaction.setId(transactionId);
-            addTransactionToMap(transaction);
-            transactions.add(transaction);
-            
+        Map map = getTotalMap();
+        synchronized (map) {
+            String from = transaction.getFrom();
+            if (userMap.get(from) == null || userMap.get(from).equals(transaction.getPublicKey())
+            && transaction.isSignatureValid() 
+            && isTransactionValid(from, transaction.getAmount())){     
+                addApprovedTransaction(transaction);            
+            }
         }
     }
 

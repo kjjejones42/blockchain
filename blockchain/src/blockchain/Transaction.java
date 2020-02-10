@@ -66,6 +66,10 @@ class Transaction implements Serializable {
         return amount;
     }
 
+    PublicKey getPublicKey(){
+        return publicKey;
+    }
+
 	void sign(PrivateKey privKey, PublicKey pubKey) {
         if (signature != null){
             throw new RuntimeException("Attempted to sign a transaction that is already signed");
