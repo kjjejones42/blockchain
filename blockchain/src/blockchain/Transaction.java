@@ -7,12 +7,12 @@ class Transaction implements Serializable {
     static final long serialVersionUID = 0;
     final String from;
     final String to;
-    final float amount;
+    final int amount;
     private byte[] signature;
     private int id;
     private PublicKey publicKey;
 
-    Transaction(String from, String to, float amount, PrivateKey privKey, PublicKey pubKey){
+    Transaction(String from, String to, int amount, PrivateKey privKey, PublicKey pubKey){
         this.from = from;
         this.to = to;
         this.amount = amount;
@@ -54,6 +54,18 @@ class Transaction implements Serializable {
         this.id = id;
     }
 
+    String getTo(){
+        return to;
+    }
+
+    String getFrom(){
+        return from;
+    }
+
+    float getAmount(){
+        return amount;
+    }
+
 	void sign(PrivateKey privKey, PublicKey pubKey) {
         if (signature != null){
             throw new RuntimeException("Attempted to sign a transaction that is already signed");
@@ -72,8 +84,8 @@ class Transaction implements Serializable {
     @Override
     public String toString() {
         if (isAdminTransaction()){
-            return  String.format("% 4d",id) + " | \"" + to + "\" was awarded " + String.format("%.2f", amount) + " " + Blockchain.COIN_NAME + " for mining the block.";
+            return  String.format("% 4d",id) + " | \"" + to + "\" was awarded " + amount + " " + Blockchain.COIN_NAME + " for mining the block.";
         }
-        return String.format("% 4d",id) + " | User \"" + from + "\" gave \"" + to + "\" " + String.format("%.2f", amount) + " " + Blockchain.COIN_NAME;
+        return String.format("% 4d",id) + " | User \"" + from + "\" gave \"" + to + "\" " +  amount + " " + Blockchain.COIN_NAME;
     }
 }

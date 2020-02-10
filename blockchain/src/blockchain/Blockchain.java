@@ -2,12 +2,14 @@ package blockchain;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.*;
 
 class Blockchain implements Serializable {
 
     static final long serialVersionUID = 1;
     static final String SELF_TRANSACTION_ID = "SELF_TRANSACTION_ID";
-    static final float REWARD_PER_BLOCK = 100f;
+    static final int REWARD_PER_BLOCK = 100;
     static final String COIN_NAME = "VC";
 
     private int zeroes;
@@ -33,6 +35,24 @@ class Blockchain implements Serializable {
         } else {
             NChangeMessage = "N stays the same";
         }
+    }
+
+    synchronized Map<String, Float> getMap(){
+        Map<String, Float> map1 = blockChain.stream().flatMap(b -> b.getTransactions().stream()).collect(Collectors.toMap(
+            Transaction::getFrom,
+            t -> -1 * t.getAmount(),
+            (p,n) -> p + n));
+        Map<String, Float> map2 = blockChain.stream().flatMap(b -> b.getTransactions().stream()).collect(Collectors.toMap(
+            Transaction::getTo,
+            t -> t.getAmount(),
+            (p,n) -> p + n));
+        return Stream.concat(
+            map1.entrySet().stream(),
+            map2.entrySet().stream())
+            .collect(Collectors.toMap(
+                Map.Entry::getKey, 
+                Map.Entry::getValue,
+                (p, n) -> p + n));
     }
 
     synchronized private void generateNewBlockToMine(Block previousBlock){
