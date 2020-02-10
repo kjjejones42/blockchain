@@ -91,9 +91,10 @@ class Blockchain implements Serializable {
             if (!currHashOfPrev.equals(prevHashActual)) {
                 return false;
             }
-            int maxTransactionId = block.getTransactions().stream().mapToInt(Transaction -> Transaction.getId()).max().orElse(Integer.MAX_VALUE);
+            List<Transaction> transactions = block.getTransactions();
+            int maxTransactionId = transactions.get(transactions.size() - 1).getId();
             int lastTransactionId = Integer.MIN_VALUE;
-            for (Transaction transaction : block.getTransactions()){
+            for (Transaction transaction : transactions){
                 int id = transaction.getId();
                 if (!transaction.isAdminTransaction() && (id > maxTransactionId || id < lastTransactionId || !transaction.isSignatureValid())){
                     return false;
