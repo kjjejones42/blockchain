@@ -57,7 +57,6 @@ class Main {
             System.out.println(blockchain.getNChangeMessage() + "\n");
             new Thread(() -> save(blockchain, PATH)).start();
         }
-        System.out.println(blockchain.getTotalMap().entrySet().stream().mapToInt(i -> i.getValue()).sum());
         submitter.interrupt();
         minerManager.close();
         save(blockchain, PATH);

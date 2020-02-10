@@ -138,19 +138,17 @@ class Blockchain implements Serializable {
         return list;
     }
 
-    synchronized boolean isTransactionValid(String userId, int amount){
+    synchronized int getUserCredit(String userId){
         Map<String, Integer> map = getTotalMap();
         synchronized (map) {
             Integer credit = getTotalMap().get(userId);        
-            credit = credit == null ? 0 : credit;
-            boolean result = credit >= amount;
-            return result;
+            return credit == null ? 0 : credit;
         }
     }
 
     synchronized Map<String, Integer> getTotalMap(){
         if (userTotalMap == null){
-            generateMap();
+            userTotalMap = generateMap();
         }
         return userTotalMap;
     }
@@ -189,9 +187,9 @@ class Blockchain implements Serializable {
         Map<String, Integer> map = getTotalMap();
         synchronized (map) {
             String from = transaction.getFrom();
-            if (userMap.get(from) == null || userMap.get(from).equals(transaction.getPublicKey())
+            if ((userMap.get(from) == null || userMap.get(from).equals(transaction.getPublicKey()))
             && transaction.isSignatureValid() 
-            && isTransactionValid(from, transaction.getAmount())){     
+            && getUserCredit(from) >= transaction.getAmount()){     
                 addApprovedTransaction(transaction);            
             }
         }
