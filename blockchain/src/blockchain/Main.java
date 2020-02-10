@@ -57,7 +57,6 @@ class Main {
             System.out.println(blockchain.getNChangeMessage() + "\n");
             new Thread(() -> save(blockchain, PATH)).start();
         }
-        submitter.interrupt();
         minerManager.close();
         save(blockchain, PATH);
     }
