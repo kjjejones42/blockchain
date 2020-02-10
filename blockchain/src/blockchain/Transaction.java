@@ -62,7 +62,7 @@ class Transaction implements Serializable {
         return from;
     }
 
-    float getAmount(){
+    int getAmount(){
         return amount;
     }
 

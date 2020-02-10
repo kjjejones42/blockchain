@@ -19,6 +19,7 @@ class Blockchain implements Serializable {
     private String NChangeMessage;
     private List<Transaction> transactions = new ArrayList<>();
     private int initialTransactionId;
+    private Map<String, Integer> userTotalMap;
 
     Blockchain(int zeroes) {
         this.zeroes = zeroes;
@@ -37,22 +38,36 @@ class Blockchain implements Serializable {
         }
     }
 
-    synchronized Map<String, Float> getMap(){
-        Map<String, Float> map1 = blockChain.stream().flatMap(b -> b.getTransactions().stream()).collect(Collectors.toMap(
+    private synchronized void addTransactionToMap(Transaction transaction){
+        int amount = transaction.getAmount();
+        userTotalMap.merge(transaction.getTo(), amount, Integer::sum);
+        userTotalMap.merge(transaction.getFrom(), -1 * amount, Integer::sum);
+    }
+
+    private synchronized void generateMap(){    
+        List<Transaction> tran = blockChain.stream().flatMap(b -> b.getTransactions().stream()).collect(Collectors.toList());
+        Map<String, Integer> map1 = tran.stream().collect(Collectors.toMap(
             Transaction::getFrom,
             t -> -1 * t.getAmount(),
             (p,n) -> p + n));
-        Map<String, Float> map2 = blockChain.stream().flatMap(b -> b.getTransactions().stream()).collect(Collectors.toMap(
+        Map<String, Integer> map2 = tran.stream().collect(Collectors.toMap(
             Transaction::getTo,
             t -> t.getAmount(),
             (p,n) -> p + n));
-        return Stream.concat(
-            map1.entrySet().stream(),
-            map2.entrySet().stream())
+        Map<String, Integer> map = Stream.concat(map1.entrySet().stream(), map2.entrySet().stream())
             .collect(Collectors.toMap(
                 Map.Entry::getKey, 
                 Map.Entry::getValue,
                 (p, n) -> p + n));
+        map.remove(SELF_TRANSACTION_ID);
+        userTotalMap = map;
+    }
+
+    synchronized Map<String, Integer> getMap(){
+        if (userTotalMap == null){
+            generateMap();
+        }
+        return userTotalMap;
     }
 
     synchronized private void generateNewBlockToMine(Block previousBlock){
@@ -129,7 +144,9 @@ class Blockchain implements Serializable {
         if (transaction.isSignatureValid()){            
             incrementTransactionId();
             transaction.setId(transactionId);
+            addTransactionToMap(transaction);
             transactions.add(transaction);
+            
         }
     }
 
