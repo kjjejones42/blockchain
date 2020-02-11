@@ -131,18 +131,19 @@ class Blockchain implements Serializable {
         transactionId++;        
     }
 
-    synchronized List<String> getUsers(){
-        List<String> list = new ArrayList<>(userMap.keySet());
-        list.remove(SELF_TRANSACTION_ID);
-        return list;
+    synchronized private void incrementZeroes() {
+        this.zeroes++;
     }
 
-    synchronized int getUserCredit(String userId){
+    synchronized private void decrementZeroes() {
+        this.zeroes--;
+    }
+    synchronized private int getUserCredit(String userId){
         Integer credit = getTotalMap().get(userId);        
         return credit == null ? 0 : credit;
     }
 
-    synchronized Map<String, Integer> getTotalMap(){
+    synchronized private Map<String, Integer> getTotalMap(){
         if (userTotalMap == null){
             userTotalMap = generateMap();
         }
@@ -151,6 +152,12 @@ class Blockchain implements Serializable {
 
     synchronized String getNChangeMessage() {
         return NChangeMessage;
+    }
+
+    synchronized List<String> getUsers(){
+        List<String> list = new ArrayList<>(userMap.keySet());
+        list.remove(SELF_TRANSACTION_ID);
+        return list;
     }
 
     synchronized int getZeroes() {
@@ -205,13 +212,5 @@ class Blockchain implements Serializable {
 
     synchronized Block getBlockToMine(String minerId) {
         return getNewBlockForMinerId(minerId);
-    }
-
-    synchronized void incrementZeroes() {
-        this.zeroes++;
-    }
-
-    synchronized void decrementZeroes() {
-        this.zeroes--;
     }
 }
