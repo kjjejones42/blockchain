@@ -53,10 +53,8 @@ class Blockchain implements Serializable {
 
         int amount = transaction.getAmount();
         var totalMap = getTotalMap();
-        synchronized (totalMap){
-            totalMap.merge(transaction.getTo(), amount, Integer::sum);
-            totalMap.merge(transaction.getFrom(), -1 * amount, Integer::sum);
-        }
+        totalMap.merge(transaction.getTo(), amount, Integer::sum);
+        totalMap.merge(transaction.getFrom(), -1 * amount, Integer::sum);
         if (totalMap.entrySet().stream().filter(t -> !t.getKey().equals(SELF_TRANSACTION_ID)).mapToInt(i -> i.getValue()).filter(i -> (i < 0)).count() > 0){
             throw new RuntimeException();
         }
@@ -139,11 +137,8 @@ class Blockchain implements Serializable {
     }
 
     synchronized int getUserCredit(String userId){
-        Map<String, Integer> map = getTotalMap();
-        synchronized (map) {
-            Integer credit = getTotalMap().get(userId);        
-            return credit == null ? 0 : credit;
-        }
+        Integer credit = getTotalMap().get(userId);        
+        return credit == null ? 0 : credit;
     }
 
     synchronized Map<String, Integer> getTotalMap(){
@@ -184,15 +179,14 @@ class Blockchain implements Serializable {
     }
 
     synchronized void submitTransaction(Transaction transaction){
-        Map<String, Integer> map = getTotalMap();
-        synchronized (map) {
-            String from = transaction.getFrom();
-            if ((userMap.get(from) == null || userMap.get(from).equals(transaction.getPublicKey()))
+        String from = transaction.getFrom();
+        if (
+            (userMap.get(from) == null || userMap.get(from).equals(transaction.getPublicKey()))
             && transaction.isSignatureValid() 
-            && getUserCredit(from) >= transaction.getAmount()){     
-                addApprovedTransaction(transaction);            
+            && getUserCredit(from) >= transaction.getAmount()
+            ){     
+            addApprovedTransaction(transaction);            
             }
-        }
     }
 
     synchronized boolean submitSubmission(BlockchainSubmission submission){
