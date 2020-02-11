@@ -55,7 +55,8 @@ class Blockchain implements Serializable {
         var totalMap = getTotalMap();
         totalMap.merge(transaction.getTo(), amount, Integer::sum);
         totalMap.merge(transaction.getFrom(), -1 * amount, Integer::sum);
-        if (totalMap.entrySet().stream().filter(t -> !t.getKey().equals(SELF_TRANSACTION_ID)).mapToInt(i -> i.getValue()).filter(i -> (i < 0)).count() > 0){
+        totalMap.remove(SELF_TRANSACTION_ID);
+        if (totalMap.entrySet().stream().mapToInt(i -> i.getValue()).filter(i -> i < 0).count() > 0){
             throw new RuntimeException();
         }
     }
