@@ -56,7 +56,7 @@ class Blockchain implements Serializable {
         totalMap.merge(transaction.getTo(), amount, Integer::sum);
         totalMap.merge(transaction.getFrom(), -1 * amount, Integer::sum);
         totalMap.remove(SELF_TRANSACTION_ID);
-        if (totalMap.entrySet().stream().mapToInt(i -> i.getValue()).filter(i -> i < 0).count() > 0){
+        if (totalMap.values().stream().mapToInt(integer -> integer).filter(i -> i < 0).count() > 0){
             throw new RuntimeException();
         }
     }
@@ -68,16 +68,16 @@ class Blockchain implements Serializable {
         Map<String, Integer> map1 = tran.stream().collect(Collectors.toMap(
             Transaction::getFrom,
             t -> -1 * t.getAmount(),
-            (p,n) -> p + n));
+                Integer::sum));
         Map<String, Integer> map2 = tran.stream().collect(Collectors.toMap(
             Transaction::getTo,
-            t -> t.getAmount(),
-            (p,n) -> p + n));
+                Transaction::getAmount,
+                Integer::sum));
         Map<String, Integer> map = Stream.concat(map1.entrySet().stream(), map2.entrySet().stream())
             .collect(Collectors.toMap(
                 Map.Entry::getKey, 
                 Map.Entry::getValue,
-                (p, n) -> p + n));
+                    Integer::sum));
         map.remove(SELF_TRANSACTION_ID);
         return map;
     }
@@ -89,7 +89,7 @@ class Blockchain implements Serializable {
             blockToMine = new Block(previousBlock.getId() + 1, previousBlock.getSelfSha256Hash());   
         }
         incrementTransactionId();
-        int min = transactions.stream().mapToInt(t -> t.getId()).min().orElse(transactionId);
+        int min = transactions.stream().mapToInt(Transaction::getId).min().orElse(transactionId);
         initialTransactionId = min - 1;
         blockToMine.setTransactions(transactions);
         this.transactions = new ArrayList<>();

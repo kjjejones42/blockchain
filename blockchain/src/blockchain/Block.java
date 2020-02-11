@@ -101,7 +101,7 @@ class Block implements Serializable {
     }
 
     void sortTransactions(){
-        transactions.sort((a,b) -> a.getId() - b.getId());
+        transactions.sort(Comparator.comparingInt(Transaction::getId));
     }
 
     String getPreliminaryHash(){
@@ -142,7 +142,7 @@ class Block implements Serializable {
         } else {
             s.append("no Transactions");
         }
-        s.append("\nBlock was generating for " + timeToGenerate / 1000f + " seconds");
+        s.append("\nBlock was generating for ").append(timeToGenerate / 1000f).append(" seconds");
         return s.toString();
     }
 }

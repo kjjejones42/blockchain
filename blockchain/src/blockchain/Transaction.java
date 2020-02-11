@@ -27,8 +27,7 @@ class Transaction implements Serializable {
             Signature sig = Signature.getInstance("SHA1withRSA");
             sig.initVerify(publicKey);
             sig.update(getPreliminaryHash());
-            boolean result = sig.verify(signature); 	
-            return result;
+            return sig.verify(signature);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

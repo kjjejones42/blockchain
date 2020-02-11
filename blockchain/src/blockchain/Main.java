@@ -11,7 +11,7 @@ class Main {
         try {
             FileInputStream fileIn = new FileInputStream(path);
             ObjectInputStream in = new ObjectInputStream(fileIn);
-            SaveFile sf = (SaveFile) in.readObject();
+            SaveFile sf = SaveFile.class.cast(in.readObject());
             encryptor.loadRSAEncryptedAESKeyFromBytes(sf.a);
             Blockchain bc = Blockchain.class.cast(encryptor.AESEncryptedBytesToObj(sf.b));
             in.close();
@@ -22,12 +22,12 @@ class Main {
         }
     }
 
-    private static void save(Blockchain bc, String path) {
-        synchronized (bc) {
+    private static void save(Blockchain blockchain, String path) {
+        synchronized (blockchain) {
             try {
                 SaveFile sf = new SaveFile(
                     encryptor.getRSAEncryptedAESKey(),
-                    encryptor.objToAESEncryptedBytes(bc));
+                    encryptor.objToAESEncryptedBytes(blockchain));
                 FileOutputStream fileOut = new FileOutputStream(path);
                 ObjectOutputStream out = new ObjectOutputStream(fileOut);
                 out.writeObject(sf);
@@ -43,11 +43,11 @@ class Main {
     public static void main(String[] args) {
         encryptor = Encryptor.getInstance();
         final Blockchain blockchain;
-        if (new File(PATH).exists()) {
-            blockchain = load(PATH);
-        } else {
+       if (new File(PATH).exists()) {
+           blockchain = load(PATH);
+       } else {
             blockchain = new Blockchain(0);
-        }
+       }
         MinerManager minerManager = new MinerManager(blockchain, 10);
         Thread submitter = new Thread(new TransactionSubmitter(blockchain, 10));
         submitter.start();

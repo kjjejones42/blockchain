@@ -22,7 +22,7 @@ class MinerManager {
     }
 
     static synchronized List<String> getListOfMiners(){
-        return miners.stream().map(m -> m.getId()).collect(Collectors.toList());
+        return miners.stream().map(Miner::getId).collect(Collectors.toList());
     }
 
     synchronized void close() {
